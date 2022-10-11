@@ -1,0 +1,5 @@
+// 添加文件夹忽略选项
+.vscode/*
+__pycache__/*
+test01.ipynb
+test.ipynb
