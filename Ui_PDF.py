@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Ui_PDF.ui'
+# Form implementation generated from reading ui file 'd:\PythonProject\Failure_Code_Recognition\PDF\Ui_PDF.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
