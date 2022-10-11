@@ -156,27 +156,38 @@ def cutFailure(information, number):
 def getFailureInformation(codeList, number, location, targetCode,allLine):
     '''提取指定故障码的相关信息（提取单个故障码）,输入故障码词典、故障码数量、故障码所在行位置词典、要检索的故障码、输出被检索的故障码和相关信息'''
     missionComplete = False     #故障码查询结果标志位
+    targetNumber = {}
+    targetCount = 0
     if len(targetCode) != 6:
         missionComplete = False
     else:   
         for m in range(number):
             if targetCode in codeList[m]:
-                targetNumber = m
-                missionComplete = True           
+                targetNumber[targetCount] = m
+                missionComplete = True
+                targetCount = targetCount + 1           
 
-    if missionComplete == True:    
-        targetLocationUp = location[targetNumber]
-        targetLocationDown = location[targetNumber + 1]
-        targetRange = targetLocationDown - targetLocationUp
+    if missionComplete == True:
+        dataTargetDic = {}
+        for i in range(targetCount):
+            targetLocationUp = location[targetNumber[i]]
+            targetLocationDown = location[targetNumber[i] + 1]
+            targetRange = targetLocationDown - targetLocationUp
 
+            dataTargetDic[i] = ''
+            for n in range(targetRange):
+                lineNumber = targetLocationUp + n
+                dataTargetDic[i] = dataTargetDic[i] + allLine[lineNumber]
+        
         dataTarget = ''
-        for n in range(targetRange):
-            lineNumber = targetLocationUp + n
-            dataTarget = dataTarget + allLine[lineNumber]
+        for j in range(targetCount):
+            dataTarget = dataTarget + dataTargetDic[j]
+            if j != targetCount - 1:
+                dataTarget = dataTarget + '\n'
         return dataTarget
     else:
         missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
-        return missionFailed     
+        return missionFailed
 
 def search_key_words_function(txtPath,searchingCode = 'N01004'):
     allLine, allLineNumber = get_all_lines(txtPath)
@@ -187,5 +198,5 @@ def search_key_words_function(txtPath,searchingCode = 'N01004'):
 
 
 # if __name__ == '__main__':
-#     a = search_key_words('./Failure_Code_Table.txt','N01004')
+#     a = search_key_words_function('./Failure_Code_Table.txt','N01004')
 #     print(a)
