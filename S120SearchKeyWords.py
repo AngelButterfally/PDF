@@ -82,7 +82,7 @@ def data_process(allLine,allLineNumber):
 
     ##提取驱动对象和组件
     if drivingObjectNumber != componentNumber:
-        print("信息提取有误！")
+        print("信息提取有误！03")
         print(drivingObjectNumber)
         print(componentNumber)
     else:
@@ -102,11 +102,11 @@ def data_process(allLine,allLineNumber):
 
     ##提取原因和处理
     if reasonNumber != processingNumber:
-        print("信息提取有误！")
+        print("信息提取有误！01")
         print(reasonNumber)
         print(processingNumber)
     elif reasonNumber != failureNumber:
-        print("信息提取有误！")
+        print("信息提取有误！02")
     else:
         for x in range(reasonNumber):
             ##提取原因
@@ -190,6 +190,8 @@ def getFailureInformation(codeList, number, location, targetCode,allLine):
         return missionFailed
 
 def s120_search_key_words_function(txtPath,searchingCode = 'N01004'):
+    if os.path.isfile(txtPath) == False:
+        return '文件路径有误!'
     allLine, allLineNumber = get_all_lines(txtPath)
     failure, failureNumber,failureLocation = data_process(allLine,allLineNumber)
     failureCode, failureName = cutFailure(failure, failureNumber)
