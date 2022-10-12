@@ -285,5 +285,4 @@ def s120_getFailureInformation(txtPath, targetCode = 'N01004'):
 
 # if __name__ == '__main__':
 #     a = s120_getFailureInformation('./TXT/S120_failure_Code_list.txt', 'N01004')
-#     #a = s120_search_key_words_function('./TXT/S120_failure_Code_list.txt','N01004')
 #     print(a)
