@@ -89,7 +89,7 @@ def data_process(allLine, allLineNumber, dataClass):
 
     ##提取驱动对象和组件
     if drivingObjectNumber != componentNumber:
-        print("信息提取有误！")
+        print("信息提取有误！03")
         print(drivingObjectNumber)
         print(componentNumber)
     else:
@@ -114,11 +114,11 @@ def data_process(allLine, allLineNumber, dataClass):
 
     ##提取原因和处理
     if reasonNumber != processingNumber:
-        print("信息提取有误！")
+        print("信息提取有误！01")
         print(reasonNumber)
         print(processingNumber)
     elif reasonNumber != failureNumber:
-        print("信息提取有误！")
+        print("信息提取有误！02")
     else:
         for x in range(reasonNumber):
             ##提取原因
