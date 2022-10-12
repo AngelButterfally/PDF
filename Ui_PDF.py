@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'e:\PDF\Ui_PDF.ui'
+# Form implementation generated from reading ui file 'd:\PythonProject\Failure_Code_Recognition\PDF\Ui_PDF.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -33,7 +33,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 716, 276))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 689, 258))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -80,7 +80,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.comboBox, 1, 0, 1, 2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 841, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 841, 26))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
@@ -136,8 +136,8 @@ class Ui_MainWindow(object):
         self.groupBox.setTitle(_translate("MainWindow", "信息栏"))
         self.pushButton.setText(_translate("MainWindow", "故障码检索"))
         self.lineEdit.setText(_translate("MainWindow", "F01000"))
-        self.comboBox.setItemText(0, _translate("MainWindow", "S1200"))
-        self.comboBox.setItemText(1, _translate("MainWindow", "G1200C"))
+        self.comboBox.setItemText(0, _translate("MainWindow", "S120"))
+        self.comboBox.setItemText(1, _translate("MainWindow", "G120C"))
         self.menu.setTitle(_translate("MainWindow", "文件"))
         self.menu_2.setTitle(_translate("MainWindow", "功能"))
         self.menu_3.setTitle(_translate("MainWindow", "设置"))

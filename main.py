@@ -20,7 +20,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setWindowTitle('北自所自控事业部故障码检索系统')
         self.setGeometry(300, 300, 1000, 500)
         self.lineEdit.setValidator(QRegExpValidator(QRegExp("[A-Z0-9]+$")))
-        self.textEdit.append('系统默认加载S120故障信息库')
+        self.textEdit.append('已加载S120故障信息库')
 
     def iniVariable(self):
         self.count = 0
@@ -64,14 +64,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             angleY = angle.y()
             # 获取当前鼠标相对于view的位置
             if angleY > 0:
-                self.label_pix += 1
-                if self.label_pix >= 50:
-                    self.label_pix = 50
+                self.label_pix += 2
+                if self.label_pix >= 34:
+                    self.label_pix = 34
             else:  # 滚轮下滚
-                self.label_pix -= 1
-                if self.label_pix <=15:
-                    self.label_pix = 15
-            self.textEdit.append(str(self.label_pix))
+                self.label_pix -= 2
+                if self.label_pix <=14:
+                    self.label_pix = 14
+            print(self.label_pix)
             label_pix = 'font-size:' + str(self.label_pix) + 'px;'
             self.label.setStyleSheet(label_pix)
             # self.adjustSize()
@@ -79,12 +79,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def keyReleaseEvent(self, QKeyEvent):
         if QKeyEvent.key()==Qt.Key_Control:
             self.ctrlPressed=False
-            self.textEdit.append('false ctrl')
         return super().keyReleaseEvent(QKeyEvent)
     def keyPressEvent(self, QKeyEvent):
         if QKeyEvent.key()==Qt.Key_Control:
             self.ctrlPressed=True
-            self.textEdit.append('true ctrl')
         return super().keyPressEvent(QKeyEvent)
 
 
