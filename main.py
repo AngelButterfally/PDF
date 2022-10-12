@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from Ui_PDF import Ui_MainWindow
 from S120ScanPDF import s120_scan_PDF_function
-from S120SearchKeyWords import s120_search_key_words_function
+from S120SearchKeyWords import s120_getFailureInformation
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
@@ -43,7 +43,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def search_key_words(self):
 
         errCode= self.lineEdit.text()
-        message = s120_search_key_words_function('./TXT/S120_failure_code_list.txt',errCode)
+        message = s120_getFailureInformation('./TXT/S120_failure_code_list.txt',errCode)
         
         self.label.setStyleSheet('font-size:20px;')
         # self.label.setStyleSheet('line-height:800px;')
