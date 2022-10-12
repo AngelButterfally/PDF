@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>841</width>
-    <height>523</height>
+    <width>849</width>
+    <height>505</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,7 +58,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>689</width>
+            <width>645</width>
             <height>258</height>
            </rect>
           </property>
@@ -186,12 +186,12 @@
      <widget class="QComboBox" name="comboBox">
       <item>
        <property name="text">
-        <string>S120</string>
+        <string>S1200</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>G120C</string>
+        <string>G1200C</string>
        </property>
       </item>
      </widget>
@@ -203,8 +203,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>841</width>
-     <height>26</height>
+     <width>849</width>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -221,7 +221,6 @@
     </property>
     <addaction name="actionscanPDF"/>
     <addaction name="actionsearchERR"/>
-    <addaction name="actionchooseErrFile"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -240,11 +239,40 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QGridLayout" name="gridLayout_3">
-     <item row="0" column="0">
+     <item row="1" column="0">
       <widget class="QPushButton" name="pushButton_2">
        <property name="text">
         <string>PushButton</string>
        </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QListWidget" name="listWidget">
+       <item>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>4</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
@@ -278,6 +306,20 @@
   <action name="actionfontSize">
    <property name="text">
     <string>字体大小</string>
+   </property>
+  </action>
+  <action name="action1">
+   <property name="icon">
+    <iconset>
+     <normaloff>icon/RIAMB_word.png</normaloff>icon/RIAMB_word.png</iconset>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>1</pointsize>
+    </font>
    </property>
   </action>
  </widget>

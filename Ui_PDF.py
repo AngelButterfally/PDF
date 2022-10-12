@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'd:\PythonProject\Failure_Code_Recognition\PDF\Ui_PDF.ui'
+# Form implementation generated from reading ui file 'e:\PDF\Ui_PDF.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(841, 523)
+        MainWindow.resize(849, 505)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
@@ -33,7 +33,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 689, 258))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 645, 258))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -80,7 +80,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.comboBox, 1, 0, 1, 2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 841, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 849, 23))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
@@ -100,7 +100,10 @@ class Ui_MainWindow(object):
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.pushButton_2 = QtWidgets.QPushButton(self.dockWidgetContents)
         self.pushButton_2.setObjectName("pushButton_2")
-        self.gridLayout_3.addWidget(self.pushButton_2, 0, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.pushButton_2, 1, 0, 1, 1)
+        self.listWidget = QtWidgets.QListWidget(self.dockWidgetContents)
+        self.listWidget.setObjectName("listWidget")
+        self.gridLayout_3.addWidget(self.listWidget, 0, 0, 1, 1)
         self.dockWidget.setWidget(self.dockWidgetContents)
         MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockWidget)
         self.actionOPEN = QtWidgets.QAction(MainWindow)
@@ -115,12 +118,20 @@ class Ui_MainWindow(object):
         self.actionchooseErrFile.setObjectName("actionchooseErrFile")
         self.actionfontSize = QtWidgets.QAction(MainWindow)
         self.actionfontSize.setObjectName("actionfontSize")
+        self.action1 = QtWidgets.QAction(MainWindow)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("e:\\PDF\\icon/RIAMB_word.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action1.setIcon(icon)
+        self.action1.setText("")
+        font = QtGui.QFont()
+        font.setPointSize(1)
+        self.action1.setFont(font)
+        self.action1.setObjectName("action1")
         self.menu.addAction(self.actionOPEN)
         self.menu.addSeparator()
         self.menu.addAction(self.actionEXIT)
         self.menu_2.addAction(self.actionscanPDF)
         self.menu_2.addAction(self.actionsearchERR)
-        self.menu_2.addAction(self.actionchooseErrFile)
         self.menu_3.addAction(self.actionfontSize)
         self.menubar.addAction(self.menu.menuAction())
         self.menubar.addAction(self.menu_2.menuAction())
@@ -136,8 +147,8 @@ class Ui_MainWindow(object):
         self.groupBox.setTitle(_translate("MainWindow", "信息栏"))
         self.pushButton.setText(_translate("MainWindow", "故障码检索"))
         self.lineEdit.setText(_translate("MainWindow", "F01000"))
-        self.comboBox.setItemText(0, _translate("MainWindow", "S120"))
-        self.comboBox.setItemText(1, _translate("MainWindow", "G120C"))
+        self.comboBox.setItemText(0, _translate("MainWindow", "S1200"))
+        self.comboBox.setItemText(1, _translate("MainWindow", "G1200C"))
         self.menu.setTitle(_translate("MainWindow", "文件"))
         self.menu_2.setTitle(_translate("MainWindow", "功能"))
         self.menu_3.setTitle(_translate("MainWindow", "设置"))
