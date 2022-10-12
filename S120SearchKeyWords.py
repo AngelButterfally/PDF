@@ -283,14 +283,6 @@ def s120_getFailureInformation(txtPath, targetCode = 'N01004'):
         missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
         return missionFailed
 
-def s120_search_key_words_function(txtPath,searchingCode = 'N01004'):
-    allLine, allLineNumber = get_all_lines(txtPath)
-    failure, failureNumber,failureLocation = data_process(allLine,allLineNumber,'failure')
-    failureCode, failureName = cutMessage(failure, failureNumber)
-    result = getFailureInformation(failureCode, failureNumber, failureLocation, searchingCode,allLine)
-    return result
-
-
 # if __name__ == '__main__':
 #     a = s120_getFailureInformation('./TXT/S120_failure_Code_list.txt', 'N01004')
 #     #a = s120_search_key_words_function('./TXT/S120_failure_Code_list.txt','N01004')
