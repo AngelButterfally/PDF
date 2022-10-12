@@ -17,7 +17,7 @@ def scan_PDF_function(pdfPath):
             singlePageText = singlePage.extract_text()
             pageText = pageText + singlePageText
     ##完整文本转存TXT格式
-    txtPath = './'+file_name[0]+'.txt'
+    txtPath = './TXT/'+file_name[0]+'.txt'
     with open(txtPath, 'w', encoding = 'utf-8') as c:
         c.write(pageText)
         c.close()
@@ -53,21 +53,9 @@ def scan_PDF_function(pdfPath):
     failureNumber = 0
     failureLocation = {}
 
-    informationValue = {}           #信息值
-    informationValueNumber = 0
-    informationValueLocation = {}
-
     informationCatefory = {}        #信息类别
     informationCateforyNumber = 0
     informationCateforyLocation = {}
-
-    drivingObject = {}
-    drivingObjectNumber = 0         #驱动对象数量
-    drivingObjectLocation = {}    #驱动对象所在首行
-
-    component = {}
-    componentNumber = 0             #组件数量 
-    componentLocation = {}        #组件所在行
 
     reason = {}
     reasonNumber = 0                #原因数量
@@ -116,29 +104,13 @@ def scan_PDF_function(pdfPath):
                     self.number = self.number + 1
                     countNumber = self.number
 
-    Failure = Foo('信息值： ', failure, failureNumber, failureLocation)
+    Failure = Foo('信息类别： ', failure, failureNumber, failureLocation)
     Failure.searchError()
     failureNumber = countNumber
-    # print(failureNumber)
-
-    InformationValue = Foo('信息值： ', informationValue, informationValueNumber, informationValueLocation)
-    InformationValue.searchInformation()
-    informationValueNumber = countNumber
-    # print(informationValueNumber)
 
     InformationCatefory = Foo('信息类别： ', informationCatefory, informationCateforyNumber, informationCateforyLocation)
     InformationCatefory.searchInformation()
     informationCateforyNumber = countNumber
-
-    DrivingObject = Foo("驱动对象： ", drivingObject, drivingObjectNumber, drivingObjectLocation)
-    DrivingObject.searchInformation1()
-    drivingObjectNumber = countNumber
-    # print(drivingObjectNumber)
-
-    Component = Foo('组件： ', component, componentNumber, componentLocation)
-    Component.searchInformation()
-    componentNumber = countNumber
-    # print(componentNumber)
 
     Reason = Foo('原因： ', reason, reasonNumber,reasonLocation)
     Reason.searchInformation1()
@@ -147,26 +119,6 @@ def scan_PDF_function(pdfPath):
     Processing = Foo('处理： ', processing, processingNumber, processingLocation)
     Processing.searchInformation1()
     processingNumber = countNumber
-
-    ##提取驱动对象和组件
-    if drivingObjectNumber != componentNumber:
-        print("信息提取有误！")
-        print(drivingObjectNumber)
-        print(componentNumber)
-    else:
-        for x in range(drivingObjectNumber):
-            ##提取组件
-            component[x] = allLine[componentLocation[x]]
-            ##提取驱动对象
-            if drivingObjectLocation[x] == componentLocation[x] - 1:    #如果驱动对象只有一行
-                drivingObject[x] = allLine[drivingObjectLocation[x]]
-            else:
-                dataDrivingObject = ''                                                           #如果驱动对象有多行
-                lineRange = componentLocation[x] - drivingObjectLocation[x]
-                for y in range(lineRange):    
-                    lineNumber = drivingObjectLocation[x] + y
-                    dataDrivingObject = dataDrivingObject + allLine[lineNumber]
-                    drivingObject[x] = dataDrivingObject
 
     ##提取原因和处理
     if reasonNumber != processingNumber:
@@ -205,8 +157,8 @@ def scan_PDF_function(pdfPath):
                     lineNumber = processingLocation[x] + y
                     dataProcess = dataProcess + allLine[lineNumber]
                     processing[x] = dataProcess
-    excelPath = './'+file_name[0]+'.xlsx'
-    CreateExcel(failure, informationValue, informationCatefory, drivingObject, component, reason, processing, excelPath)
+    excelPath = './EXCEL/'+file_name[0]+'.xlsx'
+    CreateExcel(failure, informationCatefory, reason, processing, excelPath)
     if os.path.isfile(excelPath) == False:
         return 'Excel文件生成失败!'
     else:
@@ -214,12 +166,12 @@ def scan_PDF_function(pdfPath):
     result = pdf_to_txt_result+txt_to_excel_result
     return result
 
-def CreateExcel(information1, information2, information3, information4, information5, information6, information7, path):
-    data = {'故障名称':information1, '信息值':information2, '信息类别':information3, '驱动对象':information4, '组件':information5, '原因':information6, '处理':information7}
+def CreateExcel(information1, information2, information3, information4, path):
+    data = {'故障名称':information1, '信息类别':information2, '原因':information3, '处理':information4}
     df = pd.DataFrame(data)
     df.to_excel(path) 
 
 
-# if __name__ == '__main__':
-#     a = scan_PDF_function('failure_code_table_test.pdf')
-#     print(a)
+if __name__ == '__main__':
+    a = scan_PDF_function('./PDF/G120C_failure_code_list.pdf')
+    print(a)

@@ -1,6 +1,6 @@
 import os
 
-def get_all_lines(txtPath = './Failure_Code_Table.txt'):
+def get_all_lines(txtPath = './TXT/S120_failure_Code_list.txt'):
     ## 获取每行的信息和内容
     with open(txtPath, 'r', encoding = 'utf-8') as f:
         allLine = f.readlines()
@@ -189,7 +189,7 @@ def getFailureInformation(codeList, number, location, targetCode,allLine):
         missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
         return missionFailed
 
-def search_key_words_function(txtPath,searchingCode = 'N01004'):
+def s120_search_key_words_function(txtPath,searchingCode = 'N01004'):
     allLine, allLineNumber = get_all_lines(txtPath)
     failure, failureNumber,failureLocation = data_process(allLine,allLineNumber)
     failureCode, failureName = cutFailure(failure, failureNumber)
@@ -198,5 +198,5 @@ def search_key_words_function(txtPath,searchingCode = 'N01004'):
 
 
 # if __name__ == '__main__':
-#     a = search_key_words_function('./Failure_Code_Table.txt','N01004')
+#     a = s120_search_key_words_function('./TXT/S120_failure_Code_list.txt','N01004')
 #     print(a)

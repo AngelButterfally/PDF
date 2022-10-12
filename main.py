@@ -4,8 +4,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from Ui_PDF import Ui_MainWindow
-from scanPDF import scan_PDF_function
-from searchKeyWords import search_key_words_function
+from S120ScanPDF import s120_scan_PDF_function
+from S120SearchKeyWords import s120_search_key_words_function
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
@@ -38,12 +38,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     
     def scan_PDF(self):
         filename = QFileDialog.getOpenFileName(self, "选择文件", ".", "PDF Files (*.pdf)")
-        result = scan_PDF_function(filename[0])
+        result = s120_scan_PDF_function(filename[0])
         self.textEdit.append(result)
     def search_key_words(self):
 
         errCode= self.lineEdit.text()
-        message = search_key_words_function('./final.txt',errCode)
+        message = s120_search_key_words_function('./TXT/S120_failure_code_list.txt',errCode)
         
         self.label.setStyleSheet('font-size:20px;')
         # self.label.setStyleSheet('line-height:800px;')
