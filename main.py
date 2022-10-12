@@ -21,10 +21,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setGeometry(300, 300, 1000, 500)
         self.lineEdit.setValidator(QRegExpValidator(QRegExp("[A-Z0-9]+$")))
         self.textEdit.append('已加载S120故障信息库')
+        self.label.setStyleSheet('font-size:18px;')
 
     def iniVariable(self):
         self.count = 0
-        self.label_pix = 20
+        self.label_pix = 18
         self.ctrlPressed=False
         self.faultDictionary = './TXT/S120_failure_code_list.txt'
 
