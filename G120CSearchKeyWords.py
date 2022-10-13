@@ -212,6 +212,6 @@ def g120c_getFailureInformation(txtPath, targetCode = 'N01004'):
         missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
         return missionFailed
 
-# if __name__ == '__main__':
-#     a = g120c_getFailureInformation('./TXT/G120C_failure_Code_list.txt', 'N01004')
-#     print(a)
+if __name__ == '__main__':
+    a = g120c_getFailureInformation('./TXT/G120C_failure_Code_list.txt', 'N01004')
+    print(a)

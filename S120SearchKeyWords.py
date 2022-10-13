@@ -283,6 +283,6 @@ def s120_getFailureInformation(txtPath, targetCode = 'N01004'):
         missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
         return missionFailed
 
-# if __name__ == '__main__':
-#     a = s120_getFailureInformation('./TXT/S120_failure_Code_list.txt', 'N01004')
-#     print(a)
+if __name__ == '__main__':
+    a = s120_getFailureInformation('./TXT/S120_failure_Code_list.txt', 'N01004')
+    print(a)
