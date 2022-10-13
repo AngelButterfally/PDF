@@ -1,6 +1,6 @@
 import os
 
-def get_all_lines(txtPath = './TXT/S120_failure_Code_list.txt'):
+def get_all_lines(txtPath = './TXT/G120C_failure_code_list.txt'):
     ## 获取每行的信息和内容
     with open(txtPath, 'r', encoding = 'utf-8') as f:
         allLine = f.readlines()
@@ -27,7 +27,7 @@ def get_all_lines(txtPath = './TXT/S120_failure_Code_list.txt'):
     # print(allLineNumber)
     return allLine,allLineNumber
 
-def data_process(allLine, allLineNumber, dataClass):
+def data_process(allLine,allLineNumber):
     ## 筛选分类文本信息
     failure = {}                #故障码和名称
     failureNumber = 0
@@ -44,7 +44,6 @@ def data_process(allLine, allLineNumber, dataClass):
     processing = {}
     processingNumber = 0            #处理数量
     processingLocation = {}       #处理所在首行
-
     #####################
     ###基于常规方法编写###
     #####################
@@ -52,13 +51,9 @@ def data_process(allLine, allLineNumber, dataClass):
         if "信息类别： " in allLine[x]:
             # print(allLine[i])
             failure[failureNumber] = allLine[x - 1]                 #故障码和名称
-            informationCatefory[failureNumber] = allLine[x]     #信息类别
-
             failureLocation[failureNumber] = x - 1                  #故障码所在行
-            informationCateforyLocation[informationCateforyNumber] = x
-
+            informationCatefory[failureNumber] = allLine[x]     #信息类别
             failureNumber = failureNumber + 1
-            informationCateforyNumber = informationCateforyNumber + 1
         if "原因： " in  allLine[x]:
             reasonLocation[reasonNumber] = x
             reasonNumber = reasonNumber + 1
@@ -68,11 +63,11 @@ def data_process(allLine, allLineNumber, dataClass):
 
     ##提取原因和处理
     if reasonNumber != processingNumber:
-        print("信息提取有误！01")
+        print("信息提取有误！")
         print(reasonNumber)
         print(processingNumber)
     elif reasonNumber != failureNumber:
-        print("信息提取有误！02")
+        print("信息提取有误！")
     else:
         for x in range(reasonNumber):
             ##提取原因
@@ -98,99 +93,42 @@ def data_process(allLine, allLineNumber, dataClass):
                     dataProcess = ''                                        #如果处理有多行
                     lineRange = failureLocation[x + 1] - processingLocation[x]
                     for y in range(lineRange):
-                        if y == 0:
-                            lineNumber = processingLocation[x] + y
-                            dataProcess = dataProcess + allLine[lineNumber]
-                            processing[x] = dataProcess
-                        else:
-                            lineNumber = processingLocation[x] + y
-                            dataProcess = dataProcess + '\t' + '\t' + allLine[lineNumber]
-                            processing[x] = dataProcess
+                        lineNumber = processingLocation[x] + y
+                        dataProcess = dataProcess + allLine[lineNumber]
+                        processing[x] = dataProcess
             else:
                 dataProcess = ''
                 lineRange = allLineNumber - processingLocation[x]
                 for y in range(lineRange):   
-                    if y == 0:
-                        lineNumber = processingLocation[x] + y
-                        dataProcess = dataProcess + allLine[lineNumber]
-                        processing[x] = dataProcess
-                    else:
-                        lineNumber = processingLocation[x] + y
-                        dataProcess = dataProcess + '\t' + '\t' + allLine[lineNumber]
-                        processing[x] = dataProcess
-    
-    # if dataClass == 'failure':
-    #     return failure, failureNumber,failureLocation
-    # elif dataClass == 'informationCatefory':
-    #     return informationCatefory, informationCateforyNumber, informationCateforyLocation
-    # elif dataClass == 'reason':
-    #     return reason, reasonNumber, reasonLocation
-    # elif dataClass == 'processing':
-    #     return processing, processingNumber, processingLocation
-    if dataClass == 'failure':
-        return failure, failureNumber
-    elif dataClass == 'informationCatefory':
-        return informationCatefory, informationCateforyNumber
-    elif dataClass == 'reason':
-        return reason, reasonNumber
-    elif dataClass == 'processing':
-        return processing, processingNumber
+                    lineNumber = processingLocation[x] + y
+                    dataProcess = dataProcess + allLine[lineNumber]
+                    processing[x] = dataProcess
+    return failure, failureNumber,failureLocation
 
-##切割名称和内容
-def cutMessage(inforamtion, number):
-    '''输入存有名称和内容的词典及总数'''
-    '''输出存有名称和内容的词典name和content'''
+
+##切割故障码和故障名称
+###输入存有故障码和名称的词典failure以及故障码总数failureNumber
+###输出分别存有故障码和故障名的两个词典code和name
+def cutFailure(information, number):
+    code = {}
     name = {}
-    content = {}
     for n in range(number):
-        str = inforamtion[n]
+        str = information[n]
         str2 = str.split(' ', 1)
-        name[n] = str2[0]
-        content[n] = str2[1]
-    return name, content
+        code[n] = str2[0]
+        name[n] = str2[1]
+    return code, name
 
-def formatting(name, content, number):
-    information = {}
-    for n in range(number):
-        result = name[n] + '\t' + '\t' + content[n]
-        information[n] = result
-    return information
-
-def formatting1(name, content, number):
-    information = {}
-    for n in range(number):
-        result = name[n] + '\t' + content[n]
-        information[n] = result
-    return information
-
-def g120c_getFailureInformation(txtPath, targetCode = 'N01004'):
+def getFailureInformation(codeList, number, location, targetCode,allLine):
     '''提取指定故障码的相关信息（提取单个故障码）,输入故障码词典、故障码数量、故障码所在行位置词典、要检索的故障码、输出被检索的故障码和相关信息'''
-    allLine, allLineNumber = get_all_lines(txtPath)
-
-    failure, failureNumber = data_process(allLine,allLineNumber,'failure')
-    code, name = cutMessage(failure, failureNumber)
-    failure = formatting(code, name, failureNumber)
-
-    informationCatefory, informationCateforyNumber = data_process(allLine,allLineNumber,'informationCatefory')
-    name, content = cutMessage(informationCatefory, informationCateforyNumber)
-    informationCatefory = formatting1(name, content, informationCateforyNumber) 
-
-    reason, reasonNumber = data_process(allLine,allLineNumber,'reason')
-    name, content = cutMessage(reason, reasonNumber)
-    reason = formatting(name, content, reasonNumber)
-
-    processing, processingNumber = data_process(allLine,allLineNumber,'processing')
-    name, content = cutMessage(processing, processingNumber)
-    processing = formatting(name, content, processingNumber)
-  
     missionComplete = False     #故障码查询结果标志位
     targetNumber = {}
     targetCount = 0
     if len(targetCode) != 6:
         missionComplete = False
     else:   
-        for m in range(failureNumber):
-            if targetCode in code[m]:
+        for m in range(number):
+            if targetCode in codeList[m]:
                 targetNumber[targetCount] = m
                 missionComplete = True
                 targetCount = targetCount + 1           
@@ -198,9 +136,14 @@ def g120c_getFailureInformation(txtPath, targetCode = 'N01004'):
     if missionComplete == True:
         dataTargetDic = {}
         for i in range(targetCount):
-            serialNumber = targetNumber[i]
+            targetLocationUp = location[targetNumber[i]]
+            targetLocationDown = location[targetNumber[i] + 1]
+            targetRange = targetLocationDown - targetLocationUp
+
             dataTargetDic[i] = ''
-            dataTargetDic[i] = failure[serialNumber] + informationCatefory[serialNumber] + reason[serialNumber] + processing[serialNumber]
+            for n in range(targetRange):
+                lineNumber = targetLocationUp + n
+                dataTargetDic[i] = dataTargetDic[i] + allLine[lineNumber]
         
         dataTarget = ''
         for j in range(targetCount):
@@ -212,6 +155,14 @@ def g120c_getFailureInformation(txtPath, targetCode = 'N01004'):
         missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
         return missionFailed
 
+def search_key_words_function(txtPath,searchingCode = 'N01004'):
+    allLine, allLineNumber = get_all_lines(txtPath)
+    failure, failureNumber,failureLocation = data_process(allLine,allLineNumber)
+    failureCode, failureName = cutFailure(failure, failureNumber)
+    result = getFailureInformation(failureCode, failureNumber, failureLocation, searchingCode,allLine)
+    return result
+
+
 # if __name__ == '__main__':
-#     a = g120c_getFailureInformation('./TXT/G120C_failure_Code_list.txt', 'N01004')
+#     a = search_key_words_function('./TXT/G120C_failure_code_list.txt','N01004')
 #     print(a)
