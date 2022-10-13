@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>849</width>
-    <height>504</height>
+    <width>854</width>
+    <height>660</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,24 +15,24 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>RIAMB_LOGO.png</normaloff>RIAMB_LOGO.png</iconset>
+    <normaloff>C:/Users/Administrator/.designer/backup/RIAMB_LOGO.png</normaloff>C:/Users/Administrator/.designer/backup/RIAMB_LOGO.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="2" column="0" colspan="4">
-     <widget class="QGroupBox" name="groupBox_2">
-      <property name="title">
-       <string>故障内容显示</string>
+    <item row="0" column="0" colspan="2">
+     <widget class="QWidget" name="widget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>20</height>
+       </size>
       </property>
-      <property name="flat">
-       <bool>false</bool>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_5">
+      <layout class="QGridLayout" name="gridLayout_6">
        <property name="leftMargin">
         <number>0</number>
        </property>
        <property name="topMargin">
-        <number>5</number>
+        <number>0</number>
        </property>
        <property name="rightMargin">
         <number>0</number>
@@ -40,60 +40,53 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <property name="horizontalSpacing">
+       <property name="spacing">
         <number>0</number>
        </property>
-       <item row="0" column="0">
-        <widget class="QScrollArea" name="scrollArea">
-         <property name="frameShape">
-          <enum>QFrame::Box</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <property name="lineWidth">
-          <number>2</number>
-         </property>
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>543</width>
-            <height>257</height>
-           </rect>
+       <item row="0" column="0" rowspan="2">
+        <widget class="QComboBox" name="comboBox">
+         <item>
+          <property name="text">
+           <string>S120</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_2">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::NoFrame</enum>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
+         </item>
+         <item>
+          <property name="text">
+           <string>G120C</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="1" rowspan="2" colspan="2">
+        <widget class="QLineEdit" name="lineEdit">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>F01000</string>
+         </property>
+         <property name="maxLength">
+          <number>6</number>
+         </property>
+         <property name="cursorMoveStyle">
+          <enum>Qt::LogicalMoveStyle</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>故障码检索</string>
+         </property>
         </widget>
        </item>
       </layout>
      </widget>
     </item>
-    <item row="3" column="0" colspan="4">
+    <item row="2" column="0" colspan="2">
      <widget class="QGroupBox" name="groupBox">
       <property name="minimumSize">
        <size>
@@ -148,56 +141,81 @@
       </layout>
      </widget>
     </item>
-    <item row="1" column="3">
-     <widget class="QPushButton" name="pushButton">
-      <property name="minimumSize">
-       <size>
-        <width>150</width>
-        <height>25</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>故障码检索</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="2">
-     <widget class="QLineEdit" name="lineEdit">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>25</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>300</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>F01000</string>
-      </property>
-      <property name="maxLength">
-       <number>6</number>
-      </property>
-      <property name="cursorMoveStyle">
-       <enum>Qt::LogicalMoveStyle</enum>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="0" colspan="2">
-     <widget class="QComboBox" name="comboBox">
-      <item>
-       <property name="text">
-        <string>S1200</string>
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="title">
+       <string>故障内容显示</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <property name="leftMargin">
+        <number>0</number>
        </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>G1200C</string>
+       <property name="topMargin">
+        <number>5</number>
        </property>
-      </item>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="horizontalSpacing">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QScrollArea" name="scrollArea">
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <property name="lineWidth">
+          <number>2</number>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>672</width>
+            <height>415</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="textFormat">
+              <enum>Qt::AutoText</enum>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
@@ -207,7 +225,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>849</width>
+     <width>854</width>
      <height>23</height>
     </rect>
    </property>
@@ -215,8 +233,6 @@
     <property name="title">
      <string>文件</string>
     </property>
-    <addaction name="actionOPEN"/>
-    <addaction name="separator"/>
     <addaction name="actionEXIT"/>
    </widget>
    <widget class="QMenu" name="menu_2">
@@ -230,11 +246,6 @@
     <property name="title">
      <string>设置</string>
     </property>
-    <widget class="QMenu" name="menu_4">
-     <property name="title">
-      <string>字体大小</string>
-     </property>
-    </widget>
     <widget class="QMenu" name="menu_5">
      <property name="title">
       <string>历史数据</string>
@@ -242,30 +253,30 @@
      <addaction name="actionHistoryNumber"/>
      <addaction name="actionClearHistory"/>
     </widget>
-    <addaction name="menu_4"/>
     <addaction name="menu_5"/>
+    <addaction name="actionFontSize"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QDockWidget" name="dockWidget">
-   <property name="minimumSize">
-    <size>
-     <width>91</width>
-     <height>142</height>
-    </size>
+  <widget class="QDockWidget" name="dockWidget_2">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="windowTitle">
-    <string>历史数据</string>
+    <string>历史记录</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>1</number>
+    <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QGridLayout" name="gridLayout_3">
-     <item row="0" column="0">
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
       <widget class="QListWidget" name="listWidget">
        <property name="editTriggers">
         <set>QAbstractItemView::NoEditTriggers</set>
@@ -309,7 +320,7 @@
   <action name="action1">
    <property name="icon">
     <iconset>
-     <normaloff>icon/RIAMB_word.png</normaloff>icon/RIAMB_word.png</iconset>
+     <normaloff>C:/Users/Administrator/.designer/backup/icon/RIAMB_word.png</normaloff>C:/Users/Administrator/.designer/backup/icon/RIAMB_word.png</iconset>
    </property>
    <property name="text">
     <string/>
@@ -348,6 +359,11 @@
   <action name="actionClearHistory">
    <property name="text">
     <string>清空历史数据</string>
+   </property>
+  </action>
+  <action name="actionFontSize">
+   <property name="text">
+    <string>字体大小</string>
    </property>
   </action>
  </widget>

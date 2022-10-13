@@ -6,6 +6,7 @@ from PyQt5.QtCore import *
 from Ui_PDF import Ui_MainWindow
 from S120ScanPDF import s120_scan_PDF_function
 from S120SearchKeyWords import s120_getFailureInformation
+from G120CSearchKeyWords import g120c_getFailureInformation
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -20,18 +21,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.count = 0
         self.label_pix = 18
         self.ctrlPressed=False
-        self.faultDictionary = './TXT/S120_failure_code_list.txt'
+        self.faultDictionaryPath = './TXT/S120_failure_code_list.txt'
         self.errCodeList = []
         self.maximum_storage_history = 10
-        # self.errInfoRepository = 'S120'
+        self.currentDict = 'S120'
 
     def iniUI(self):
         self.setWindowTitle('北自所自控事业部故障码检索系统')
         self.setWindowIcon(QIcon('./icon/RIAMB.png'))
-        self.setGeometry(300, 300, 1000, 500)
+        self.setGeometry(150, 150, 1500, 800)
         self.lineEdit.setValidator(QRegExpValidator(QRegExp("[A-Z0-9]+$")))
         self.textEdit.append('已加载S120故障信息库')
-        self.label.setStyleSheet('font-size:16px;')
+        self.label.setStyleSheet('font-size:20px;')
+        self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
     def connectFunction(self):
         # self.pushButton.clicked.connect(self.show_txt)
@@ -48,14 +50,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionEXIT.triggered.connect(QCoreApplication.quit)
         self.actionClearHistory.triggered.connect(self.history_clear_FUNCTION)
         self.actionHistoryNumber.triggered.connect(self.history_maxNumber_storage_FUNCTION)
+        self.actionFontSize.triggered.connect(self.font_size_FUNCTION)
 
     def choose_errInfo_repository_FUNCTION(self):
         if self.comboBox.currentIndex() == 0:
+            self.currentDict = 'S120'
             self.textEdit.append('已加载S120故障信息库')
-            self.faultDictionary = './TXT/S120_failure_code_list.txt'
+            self.faultDictionaryPath = './TXT/S120_failure_code_list.txt'
         elif self.comboBox.currentIndex() == 1:
+            self.currentDict = 'G120C'
             self.textEdit.append('已加载G120C故障信息库')
-            self.faultDictionary = './TXT/G120C_failure_code_list.txt'
+            self.faultDictionaryPath = './TXT/G120C_failure_code_list.txt'
 
     def scan_PDF_FUNCTION(self):
         filename = QFileDialog.getOpenFileName(
@@ -73,17 +78,29 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.listWidget.addItems(self.errCodeList)
         return
 
+    def font_size_FUNCTION(self):
+        num,ok=QInputDialog.getInt(self,'字体大小设置','输入数字(1~20)',value=self.label_pix,min=8,max=30,step=2)
+        self.label_pix = num
+        label_pix = 'font-size:' + str(self.label_pix) + 'px;'
+        self.label.setStyleSheet(label_pix)
+        self.update()
+        return
+
     def history_clear_FUNCTION(self):
+        self.errCodeList = []
         self.listWidget.clear()
         return
 
     def search_key_words_FUNCTION(self):
         errCode = self.lineEdit.text()
-        message = self.search_key_words(self.faultDictionary, errCode)
+        message = self.search_key_words(self.faultDictionaryPath, errCode,self.currentDict)
         self.label.setText(message)
     
-    def search_key_words(self,errDictionary,errCode):
-        message = s120_getFailureInformation(errDictionary, errCode)
+    def search_key_words(self,errDictionaryPath,errCode,switchDict):
+        if switchDict == 'S120':
+            message = s120_getFailureInformation(errDictionaryPath, errCode)
+        elif switchDict == 'G120C':
+            message = g120c_getFailureInformation(errDictionaryPath, errCode)
         return message
 
     def wheelEvent(self, event):
@@ -137,21 +154,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         a_item = self.listWidget.selectedItems()[0]  # 获取选择的item
         index = self.listWidget.indexFromItem(a_item)  # 通过item获取选择的索引号
         message = self.errCodeList[index.row()]
-        errInfoRepository = message.split('-',1)[0]
+        switchDict = message.split('-',1)[0]
         errCode = message.split('-',1)[1]
-        if errInfoRepository == 'S120':
+        if switchDict == 'S120':
             errDictionary = './TXT/S120_failure_code_list.txt'
-        elif errInfoRepository == 'G120C':
+        elif switchDict == 'G120C':
             errDictionary = './TXT/G120C_failure_code_list.txt'
-        message = self.search_key_words(errDictionary,errCode)
+        message = self.search_key_words(errDictionary,errCode,switchDict)
         self.label.setText(message)
         return
 
     def test(self):
         self.textEdit.append('test message ~')
         return
-
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
