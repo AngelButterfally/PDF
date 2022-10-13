@@ -72,7 +72,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.label_pix -= 2
                 if self.label_pix <=14:
                     self.label_pix = 14
-            print(self.label_pix)
+            # print(self.label_pix)
             label_pix = 'font-size:' + str(self.label_pix) + 'px;'
             self.label.setStyleSheet(label_pix)
             # self.adjustSize()
