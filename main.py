@@ -31,7 +31,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setGeometry(300, 300, 1000, 500)
         self.lineEdit.setValidator(QRegExpValidator(QRegExp("[A-Z0-9]+$")))
         self.textEdit.append('已加载S120故障信息库')
-        self.label.setStyleSheet('font-size:20px;')
+        self.label.setStyleSheet('font-size:16px;')
 
     def connectFunction(self):
         # self.pushButton.clicked.connect(self.show_txt)
