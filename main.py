@@ -18,10 +18,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def iniUI(self):
         self.setWindowTitle('北自所自控事业部故障码检索系统')
+        self.setWindowIcon(QIcon('./icon/RIAMB.png'))
         self.setGeometry(300, 300, 1000, 500)
         self.lineEdit.setValidator(QRegExpValidator(QRegExp("[A-Z0-9]+$")))
         self.textEdit.append('已加载S120故障信息库')
-        self.label.setStyleSheet('font-size:18px;')
+        self.label.setStyleSheet('font-size:20px;')
 
     def iniVariable(self):
         self.count = 0
@@ -54,7 +55,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.textEdit.append(result)
 
     def search_key_words(self):
-
         errCode = self.lineEdit.text()
         message = s120_getFailureInformation(self.faultDictionary, errCode)
         self.label.setText(message)
@@ -85,6 +85,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if QKeyEvent.key()==Qt.Key_Control:
             self.ctrlPressed=True
         return super().keyPressEvent(QKeyEvent)
+
+    # def paintEvent(self, event):
+    #     painter = QPainter(self)
+    #     pixmap = QPixmap('./icon/RIAMB_word.png')  ## ""中输入图片路径
+    #     # 绘制窗口背景，平铺到整个窗口，随着窗口改变而改变
+    #     painter.drawPixmap(self.rect(), pixmap)
+
 
 
 if __name__ == '__main__':
