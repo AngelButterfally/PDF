@@ -28,11 +28,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def iniUI(self):
         self.setWindowTitle('北自所自控事业部故障码检索系统')
-        self.setWindowIcon(QIcon('./icon/RIAMB.png'))
+        self.setWindowIcon(QIcon('./icon/RIAMB.ico'))
         self.setGeometry(150, 150, 1500, 800)
         self.lineEdit.setValidator(QRegExpValidator(QRegExp("[A-Z0-9]+$")))
         self.textEdit.append('已加载S120故障信息库')
-        self.label.setStyleSheet('font-size:20px;')
+        self.label.setStyleSheet('font-size:18px;')
         self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
     def connectFunction(self):
@@ -79,7 +79,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         return
 
     def font_size_FUNCTION(self):
-        num,ok=QInputDialog.getInt(self,'字体大小设置','输入数字(1~20)',value=self.label_pix,min=8,max=30,step=2)
+        num,ok=QInputDialog.getInt(self,'字体大小设置','输入数字(12~34)',value=self.label_pix,min=8,max=30,step=2)
         self.label_pix = num
         label_pix = 'font-size:' + str(self.label_pix) + 'px;'
         self.label.setStyleSheet(label_pix)
@@ -114,8 +114,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.label_pix = 34
             else:  # 滚轮下滚
                 self.label_pix -= 2
-                if self.label_pix <=14:
-                    self.label_pix = 14
+                if self.label_pix <=12:
+                    self.label_pix = 12
             # print(self.label_pix)
             label_pix = 'font-size:' + str(self.label_pix) + 'px;'
             self.label.setStyleSheet(label_pix)

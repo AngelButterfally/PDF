@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>854</width>
+    <width>675</width>
     <height>660</height>
    </rect>
   </property>
@@ -45,14 +45,20 @@
        </property>
        <item row="0" column="0" rowspan="2">
         <widget class="QComboBox" name="comboBox">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
          <item>
           <property name="text">
-           <string>S120</string>
+           <string>SINAMICS S120故障手册</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>G120C</string>
+           <string>SINAMICS G120C故障手册</string>
           </property>
          </item>
         </widget>
@@ -61,7 +67,7 @@
         <widget class="QLineEdit" name="lineEdit">
          <property name="minimumSize">
           <size>
-           <width>0</width>
+           <width>150</width>
            <height>0</height>
           </size>
          </property>
@@ -184,7 +190,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>672</width>
+            <width>552</width>
             <height>415</height>
            </rect>
           </property>
@@ -225,7 +231,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>854</width>
+     <width>675</width>
      <height>23</height>
     </rect>
    </property>

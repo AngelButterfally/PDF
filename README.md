@@ -7,3 +7,6 @@
 ### V0.1.3:
 将文件进行了分类归档，修改了引入地址
 添加了G120C变频器故障手册的scan和search功能py文件
+
+### 
+生成：Pyinstaller -w -i RIAMB.ico main.py
