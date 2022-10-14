@@ -8,5 +8,4 @@ test.ipynb
 S120_test.ipynb
 *.spec
 *.pyw
-*.ico
 build/*
