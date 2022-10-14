@@ -29,10 +29,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def iniUI(self):
         self.setWindowTitle('北自所自控事业部故障码检索系统')
         self.setWindowIcon(QIcon('./icon/RIAMB.ico'))
-        self.setGeometry(150, 150, 1500, 800)
+        self.setGeometry(150, 150, 1600, 800)
         self.lineEdit.setValidator(QRegExpValidator(QRegExp("[A-Z0-9]+$")))
         self.textEdit.append('已加载S120故障信息库')
-        self.label.setStyleSheet('font-size:18px;')
+        self.label.setStyleSheet('font-size:20px;')
         self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
     def connectFunction(self):
@@ -110,12 +110,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             # 获取当前鼠标相对于view的位置
             if angleY > 0:
                 self.label_pix += 2
-                if self.label_pix >= 34:
-                    self.label_pix = 34
+                if self.label_pix >= 24:
+                    self.label_pix = 24
             else:  # 滚轮下滚
                 self.label_pix -= 2
-                if self.label_pix <=12:
-                    self.label_pix = 12
+                if self.label_pix <=16:
+                    self.label_pix = 16
             # print(self.label_pix)
             label_pix = 'font-size:' + str(self.label_pix) + 'px;'
             self.label.setStyleSheet(label_pix)
@@ -169,6 +169,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         return
 
 if __name__ == '__main__':
+    QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)
     myWin = MainWindow()
     myWin.show()
