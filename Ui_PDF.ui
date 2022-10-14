@@ -234,9 +234,6 @@
              <property name="text">
               <string/>
              </property>
-             <property name="pixmap">
-              <pixmap>icon/RIAMB_word.png</pixmap>
-             </property>
              <property name="alignment">
               <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
              </property>

@@ -35,6 +35,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.textEdit.append('已加载S120故障信息库')
         self.label.setStyleSheet('font-size:20px;')
         self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.label_icon.setPixmap(QPixmap("./icon/RIAMB_word.png"))
         self.textEdit.append('软件初始化完成。')      
 
     def connectFunction(self):
