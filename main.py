@@ -29,11 +29,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def iniUI(self):
         self.setWindowTitle('北自所自控事业部故障码检索系统')
         self.setWindowIcon(QIcon('./icon/RIAMB.ico'))
-        self.setGeometry(150, 150, 1600, 800)
+        self.setGeometry(150, 150, 1500, 800)
+        self.statusShowTime()
         self.lineEdit.setValidator(QRegExpValidator(QRegExp("[A-Z0-9]+$")))
         self.textEdit.append('已加载S120故障信息库')
         self.label.setStyleSheet('font-size:20px;')
         self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.textEdit.append('软件初始化完成。')      
 
     def connectFunction(self):
         # self.pushButton.clicked.connect(self.show_txt)
@@ -67,6 +69,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self, "选择文件", ".", "PDF Files (*.pdf)")
         result = s120_scan_PDF_function(filename[0])
         self.textEdit.append(result)
+        self.textEdit.append('正在执行：文档扫描')
 
     def history_maxNumber_storage_FUNCTION(self):
         num,ok=QInputDialog.getInt(self,'历史存储数量','输入数字(1~20)',value=5,min=1,max=20)
@@ -76,6 +79,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.errCodeList = self.errCodeList[0:self.maximum_storage_history]
                 self.listWidget.clear()
                 self.listWidget.addItems(self.errCodeList)
+        self.textEdit.append('设置最大历史信息存储数量为：'+str(self.maximum_storage_history))
         return
 
     def font_size_FUNCTION(self):
@@ -84,6 +88,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         label_pix = 'font-size:' + str(self.label_pix) + 'px;'
         self.label.setStyleSheet(label_pix)
         self.update()
+        self.textEdit.append('设置显示字体大小为：'+str(self.label_pix) + 'px')
         return
 
     def history_clear_FUNCTION(self):
@@ -95,6 +100,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         errCode = self.lineEdit.text()
         message = self.search_key_words(self.faultDictionaryPath, errCode,self.currentDict)
         self.label.setText(message)
+        return
     
     def search_key_words(self,errDictionaryPath,errCode,switchDict):
         if switchDict == 'S120':
@@ -163,6 +169,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         message = self.search_key_words(errDictionary,errCode,switchDict)
         self.label.setText(message)
         return
+
+    def showCurrentTime(self, timeLabel):
+        '''获取当前时间'''
+        time = QDateTime.currentDateTime()
+        timeDisplay = time.toString('yyyy-MM-dd hh:mm:ss dddd')
+        timeLabel.setText(timeDisplay)
+
+    def statusShowTime(self):
+        '''显示当前时间'''
+        self.timer = QTimer()
+        self.timeLabel = QLabel()
+        self.statusBar.addPermanentWidget(self.timeLabel, 1)
+        self.timer.timeout.connect(lambda: self.showCurrentTime(
+            self.timeLabel))
+        self.timer.start(500)
+        self.info = QLabel()
+        self.info.setText('-Code by RIAMB-')
+        self.statusBar.addPermanentWidget(self.info, 0)
 
     def test(self):
         self.textEdit.append('test message ~')
