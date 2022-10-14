@@ -29,12 +29,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def iniUI(self):
         self.setWindowTitle('北自所自控事业部故障码检索系统')
         self.setWindowIcon(QIcon('./icon/RIAMB.ico'))
-        self.setGeometry(150, 150, 1500, 800)
+        self.setGeometry(150, 150, 1550, 800)
         self.statusShowTime()
         self.lineEdit.setValidator(QRegExpValidator(QRegExp("[A-Z0-9]+$")))
         self.textEdit.append('已加载S120故障信息库')
         self.label.setStyleSheet('font-size:18px;')
         self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.label_icon.setPixmap(QPixmap("./icon/RIAMB_word.png"))
         self.textEdit.append('软件初始化完成。')      
 
     def connectFunction(self):
