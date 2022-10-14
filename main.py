@@ -1,10 +1,13 @@
+import imp
 import sys
+import os
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from Ui_PDF import Ui_MainWindow
 from S120ScanPDF import s120_scan_PDF_function
+from G120CScanPDF import g120c_scan_PDF_function
 from S120SearchKeyWords import s120_getFailureInformation
 from G120CSearchKeyWords import g120c_getFailureInformation
 
@@ -36,11 +39,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.label.setStyleSheet('font-size:18px;')
         self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.label_icon.setPixmap(QPixmap("./icon/RIAMB_word.png"))
-        self.textEdit.append('软件初始化完成。')      
+        self.textEdit.append('软件初始化完成。')
 
     def connectFunction(self):
         # self.pushButton.clicked.connect(self.show_txt)
-        self.actionscanPDF.triggered.connect(self.scan_PDF_FUNCTION)
+        self.actionloadProfileS120.triggered.connect(self.load_profile_S120_FUNCTION)
+        self.actionloadProfileG120C.triggered.connect(self.load_profile_G120C_FUNCTION)
         self.actionsearchERR.triggered.connect(self.search_key_words_FUNCTION)
         self.actionsearchERR.triggered.connect(self.history_storage)
         self.pushButton.clicked.connect(self.search_key_words_FUNCTION)
@@ -65,12 +69,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.textEdit.append('已加载G120C故障信息库')
             self.faultDictionaryPath = './TXT/G120C_failure_code_list.txt'
 
-    def scan_PDF_FUNCTION(self):
+    def load_profile_S120_FUNCTION(self):
         filename = QFileDialog.getOpenFileName(
-            self, "选择文件", ".", "PDF Files (*.pdf)")
+            self, "选择S120故障手册文件", ".", "PDF Files (*.pdf)")
         result = s120_scan_PDF_function(filename[0])
+        self.textEdit.append('正在执行: S120 文档扫描')
         self.textEdit.append(result)
-        self.textEdit.append('正在执行：文档扫描')
+        return
+    
+    def load_profile_G120C_FUNCTION(self):
+        filename = QFileDialog.getOpenFileName(
+            self, "选择G120C故障手册文件", ".", "PDF Files (*.pdf)")
+        result = g120c_scan_PDF_function(filename[0])
+        self.textEdit.append('正在执行: G120C文档扫描')
+        self.textEdit.append(result)
+        return
 
     def history_maxNumber_storage_FUNCTION(self):
         num,ok=QInputDialog.getInt(self,'历史存储数量','输入数字(1~20)',value=5,min=1,max=20)

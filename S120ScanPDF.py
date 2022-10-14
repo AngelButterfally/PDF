@@ -1,6 +1,5 @@
 import pdfplumber
 import pandas as pd
-import numpy as np
 import os
 
 def s120_scan_PDF_function(pdfPath):

@@ -1,9 +1,8 @@
 import pdfplumber
 import pandas as pd
-import numpy as np
 import os
 
-def scan_PDF_function(pdfPath):
+def g120c_scan_PDF_function(pdfPath):
     '''PDF扫描'''
     ##依次扫描PDF页面并串联文本
     if os.path.isfile(pdfPath) == False:
@@ -171,7 +170,6 @@ def CreateExcel(information1, information2, information3, information4, path):
     df = pd.DataFrame(data)
     df.to_excel(path) 
 
-
-if __name__ == '__main__':
-    a = scan_PDF_function('./PDF/G120C_failure_code_list.pdf')
-    print(a)
+# if __name__ == '__main__':
+#     a = g120c_scan_PDF_function('./PDF/G120C_failure_code_list.pdf')
+#     print(a)

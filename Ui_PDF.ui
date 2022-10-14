@@ -267,7 +267,6 @@
     <property name="title">
      <string>功能</string>
     </property>
-    <addaction name="actionscanPDF"/>
     <addaction name="actionsearchERR"/>
    </widget>
    <widget class="QMenu" name="menu_3">
@@ -281,7 +280,15 @@
      <addaction name="actionHistoryNumber"/>
      <addaction name="actionClearHistory"/>
     </widget>
+    <widget class="QMenu" name="menuloadProfile">
+     <property name="title">
+      <string>加载配置文件</string>
+     </property>
+     <addaction name="actionloadProfileS120"/>
+     <addaction name="actionloadProfileG120C"/>
+    </widget>
     <addaction name="menu_5"/>
+    <addaction name="menuloadProfile"/>
     <addaction name="actionFontSize"/>
    </widget>
    <addaction name="menu"/>
@@ -424,6 +431,16 @@
      <pointsize>20</pointsize>
      <stylestrategy>PreferDefault</stylestrategy>
     </font>
+   </property>
+  </action>
+  <action name="actionloadProfileS120">
+   <property name="text">
+    <string>加载S120配置文件</string>
+   </property>
+  </action>
+  <action name="actionloadProfileG120C">
+   <property name="text">
+    <string>加载G120C配置文件</string>
    </property>
   </action>
  </widget>
