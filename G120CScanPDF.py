@@ -80,10 +80,11 @@ def scan_PDF_function(pdfPath):
             countNumber = 0
             for x in range(allLineNumber):    
                 if self.search in allLine[x]:
-                    self.name[self.number] = allLine[x - 1]
-                    self.lineNumber[self.number] = x - 1
-                    self.number = self.number + 1 
-                    countNumber = self.number   
+                    if '信息值： ' not in allLine[x - 1]:
+                        self.name[self.number] = allLine[x - 1]
+                        self.lineNumber[self.number] = x - 1
+                        self.number = self.number + 1 
+                        countNumber = self.number   
 
         def searchInformation(self):                        #检索信息值和信息类别
             global countNumber
@@ -158,12 +159,17 @@ def scan_PDF_function(pdfPath):
                     dataProcess = dataProcess + allLine[lineNumber]
                     processing[x] = dataProcess
     excelPath = './EXCEL/'+file_name[0]+'.xlsx'
-    CreateExcel(failure, informationCatefory, reason, processing, excelPath)
+    if failureNumber == informationCateforyNumber:
+        CreateExcel(failure, informationCatefory, reason, processing, excelPath)
     if os.path.isfile(excelPath) == False:
-        return 'Excel文件生成失败!'
+        txt_to_excel_result = '文件生成失败! 请选择G120C故障手册文件!'
+        txtDocument = './TXT'
+        txtName = file_name[0]+'.txt'
+        os.remove(os.path.join(txtDocument, txtName))
+        return txt_to_excel_result
     else:
-        txt_to_excel_result = 'Excel文件生成完成! '+'保存在 '+ file_name[0]+'.xlsx 中。'
-    result = pdf_to_txt_result+txt_to_excel_result
+        txt_to_excel_result = pdf_to_txt_result + 'Excel文件生成完成! '+'保存在 '+ file_name[0]+'.xlsx 中。'
+    result = txt_to_excel_result
     return result
 
 def CreateExcel(information1, information2, information3, information4, path):
@@ -172,6 +178,6 @@ def CreateExcel(information1, information2, information3, information4, path):
     df.to_excel(path) 
 
 
-if __name__ == '__main__':
-    a = scan_PDF_function('./PDF/G120C_failure_code_list.pdf')
-    print(a)
+# if __name__ == '__main__':
+#     a = scan_PDF_function('./PDF/S120_failure_code_list.pdf')
+#     print(a)

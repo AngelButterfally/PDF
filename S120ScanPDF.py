@@ -119,7 +119,7 @@ def s120_scan_PDF_function(pdfPath):
     Failure = Foo('信息值： ', failure, failureNumber, failureLocation)
     Failure.searchError()
     failureNumber = countNumber
-    # print(failureNumber)
+    #print(failureNumber)
 
     InformationValue = Foo('信息值： ', informationValue, informationValueNumber, informationValueLocation)
     InformationValue.searchInformation()
@@ -129,6 +129,7 @@ def s120_scan_PDF_function(pdfPath):
     InformationCatefory = Foo('信息类别： ', informationCatefory, informationCateforyNumber, informationCateforyLocation)
     InformationCatefory.searchInformation()
     informationCateforyNumber = countNumber
+    #print(informationCateforyNumber)
 
     DrivingObject = Foo("驱动对象： ", drivingObject, drivingObjectNumber, drivingObjectLocation)
     DrivingObject.searchInformation1()
@@ -206,12 +207,17 @@ def s120_scan_PDF_function(pdfPath):
                     dataProcess = dataProcess + allLine[lineNumber]
                     processing[x] = dataProcess
     excelPath = './EXCEL/'+file_name[0]+'.xlsx'
-    CreateExcel(failure, informationValue, informationCatefory, drivingObject, component, reason, processing, excelPath)
+    if failureNumber == informationCateforyNumber:
+        CreateExcel(failure, informationValue, informationCatefory, drivingObject, component, reason, processing, excelPath)
     if os.path.isfile(excelPath) == False:
-        return 'Excel文件生成失败!'
+        txt_to_excel_result = '文件生成失败! 请选择S120故障手册文件!'
+        txtDocument = './TXT'
+        txtName = file_name[0]+'.txt'
+        os.remove(os.path.join(txtDocument, txtName))
+        return txt_to_excel_result
     else:
-        txt_to_excel_result = 'Excel文件生成完成! '+'保存在 '+ file_name[0]+'.xlsx 中。'
-    result = pdf_to_txt_result+txt_to_excel_result
+        txt_to_excel_result = pdf_to_txt_result + 'Excel文件生成完成! '+'保存在 '+ file_name[0]+'.xlsx 中。'
+    result = txt_to_excel_result
     return result
 
 def CreateExcel(information1, information2, information3, information4, information5, information6, information7, path):
