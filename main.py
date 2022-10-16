@@ -60,6 +60,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionHistoryNumber.triggered.connect(
             self.history_maxNumber_storage_FUNCTION)
         self.actionFontSize.triggered.connect(self.font_size_FUNCTION)
+        self.actionopenHistory.triggered.connect(
+            self.show_history_dockwidget_FUNCTION)
 
     def choose_errInfo_repository_FUNCTION(self):
         if self.comboBox.currentIndex() == 0:
@@ -121,6 +123,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.faultDictionaryPath, errCode, self.currentDict)
         self.label.setText(message)
         return
+
+    def show_history_dockwidget_FUNCTION(self):
+        self.dockWidget_History.show()
 
     def search_key_words(self, errDictionaryPath, errCode, switchDict):
         if switchDict == 'S120':
