@@ -9,3 +9,4 @@ S120_test.ipynb
 *.spec
 *.pyw
 build/*
+main.spec
