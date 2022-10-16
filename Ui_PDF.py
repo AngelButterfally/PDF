@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'e:\PDF\Ui_PDF.ui'
+# Form implementation generated from reading ui file 'c:\Users\Administrator\Desktop\PDF\Ui_PDF.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -16,7 +16,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(902, 720)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("C:/Users/Administrator/.designer/backup/RIAMB_LOGO.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("c:\\Users\\Administrator\\Desktop\\PDF\\../../.designer/backup/RIAMB_LOGO.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -34,6 +34,7 @@ class Ui_MainWindow(object):
         self.textEdit = QtWidgets.QTextEdit(self.groupBox)
         self.textEdit.setMinimumSize(QtCore.QSize(0, 0))
         self.textEdit.setMaximumSize(QtCore.QSize(16777215, 100))
+        self.textEdit.setReadOnly(True)
         self.textEdit.setObjectName("textEdit")
         self.gridLayout_4.addWidget(self.textEdit, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.groupBox, 2, 0, 1, 2)
@@ -147,7 +148,7 @@ class Ui_MainWindow(object):
         self.actionchooseErrFile.setObjectName("actionchooseErrFile")
         self.action1 = QtWidgets.QAction(MainWindow)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("C:/Users/Administrator/.designer/backup/icon/RIAMB_word.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap("c:\\Users\\Administrator\\Desktop\\PDF\\../../.designer/backup/icon/RIAMB_word.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action1.setIcon(icon1)
         self.action1.setText("")
         font = QtGui.QFont()
@@ -172,7 +173,7 @@ class Ui_MainWindow(object):
         self.action1_2.setCheckable(False)
         self.action1_2.setEnabled(True)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("e:\\PDF\\icon/RIAMB.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap("c:\\Users\\Administrator\\Desktop\\PDF\\icon/RIAMB.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action1_2.setIcon(icon2)
         self.action1_2.setText("")
         font = QtGui.QFont()

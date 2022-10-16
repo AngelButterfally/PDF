@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>C:/Users/Administrator/.designer/backup/RIAMB_LOGO.png</normaloff>C:/Users/Administrator/.designer/backup/RIAMB_LOGO.png</iconset>
+    <normaloff>../../.designer/backup/RIAMB_LOGO.png</normaloff>../../.designer/backup/RIAMB_LOGO.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -68,6 +68,9 @@
            <width>16777215</width>
            <height>100</height>
           </size>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -366,7 +369,7 @@
   <action name="action1">
    <property name="icon">
     <iconset>
-     <normaloff>C:/Users/Administrator/.designer/backup/icon/RIAMB_word.png</normaloff>C:/Users/Administrator/.designer/backup/icon/RIAMB_word.png</iconset>
+     <normaloff>../../.designer/backup/icon/RIAMB_word.png</normaloff>../../.designer/backup/icon/RIAMB_word.png</iconset>
    </property>
    <property name="text">
     <string/>

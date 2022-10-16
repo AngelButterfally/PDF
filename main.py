@@ -1,6 +1,4 @@
-import imp
 import sys
-import os
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -23,7 +21,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def iniVariable(self):
         self.count = 0
         self.label_pix = 18
-        self.ctrlPressed=False
+        self.ctrlPressed = False
         self.faultDictionaryPath = './TXT/S120_failure_code_list.txt'
         self.errCodeList = []
         self.maximum_storage_history = 10
@@ -43,20 +41,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def connectFunction(self):
         # self.pushButton.clicked.connect(self.show_txt)
-        self.actionloadProfileS120.triggered.connect(self.load_profile_S120_FUNCTION)
-        self.actionloadProfileG120C.triggered.connect(self.load_profile_G120C_FUNCTION)
+        self.actionloadProfileS120.triggered.connect(
+            self.load_profile_S120_FUNCTION)
+        self.actionloadProfileG120C.triggered.connect(
+            self.load_profile_G120C_FUNCTION)
         self.actionsearchERR.triggered.connect(self.search_key_words_FUNCTION)
         self.actionsearchERR.triggered.connect(self.history_storage)
         self.pushButton.clicked.connect(self.search_key_words_FUNCTION)
         self.pushButton.clicked.connect(self.history_storage)
         self.lineEdit.returnPressed.connect(self.search_key_words_FUNCTION)
         self.lineEdit.returnPressed.connect(self.history_storage)
-        self.comboBox.currentIndexChanged[int].connect(self.choose_errInfo_repository_FUNCTION)
+        self.comboBox.currentIndexChanged[int].connect(
+            self.choose_errInfo_repository_FUNCTION)
         self.listWidget.doubleClicked.connect(self.history_show)
         # self.pushButton_2.clicked.connect(self.test)
         self.actionEXIT.triggered.connect(QCoreApplication.quit)
         self.actionClearHistory.triggered.connect(self.history_clear_FUNCTION)
-        self.actionHistoryNumber.triggered.connect(self.history_maxNumber_storage_FUNCTION)
+        self.actionHistoryNumber.triggered.connect(
+            self.history_maxNumber_storage_FUNCTION)
         self.actionFontSize.triggered.connect(self.font_size_FUNCTION)
 
     def choose_errInfo_repository_FUNCTION(self):
@@ -76,7 +78,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.textEdit.append('正在执行: S120 文档扫描')
         self.textEdit.append(result)
         return
-    
+
     def load_profile_G120C_FUNCTION(self):
         filename = QFileDialog.getOpenFileName(
             self, "选择G120C故障手册文件", ".", "PDF Files (*.pdf)")
@@ -86,18 +88,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         return
 
     def history_maxNumber_storage_FUNCTION(self):
-        num,ok=QInputDialog.getInt(self,'历史存储数量','输入数字(1~20)',value=5,min=1,max=20)
+        num, ok = QInputDialog.getInt(
+            self, '历史存储数量', '输入数字(1~20)', value=5, min=1, max=20)
         if ok:
             self.maximum_storage_history = num
             if len(self.errCodeList) > self.maximum_storage_history:
                 self.errCodeList = self.errCodeList[0:self.maximum_storage_history]
                 self.listWidget.clear()
                 self.listWidget.addItems(self.errCodeList)
-        self.textEdit.append('设置最大历史信息存储数量为：'+str(self.maximum_storage_history))
+        self.textEdit.append(
+            '设置最大历史信息存储数量为：'+str(self.maximum_storage_history))
         return
 
     def font_size_FUNCTION(self):
-        num,ok=QInputDialog.getInt(self,'字体大小设置','输入数字(12~34)',value=self.label_pix,min=8,max=30,step=2)
+        num, ok = QInputDialog.getInt(
+            self, '字体大小设置', '输入数字(12~34)', value=self.label_pix, min=8, max=30, step=2)
         self.label_pix = num
         label_pix = 'font-size:' + str(self.label_pix) + 'px;'
         self.label.setStyleSheet(label_pix)
@@ -112,11 +117,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def search_key_words_FUNCTION(self):
         errCode = self.lineEdit.text()
-        message = self.search_key_words(self.faultDictionaryPath, errCode,self.currentDict)
+        message = self.search_key_words(
+            self.faultDictionaryPath, errCode, self.currentDict)
         self.label.setText(message)
         return
-    
-    def search_key_words(self,errDictionaryPath,errCode,switchDict):
+
+    def search_key_words(self, errDictionaryPath, errCode, switchDict):
         if switchDict == 'S120':
             message = s120_getFailureInformation(errDictionaryPath, errCode)
         elif switchDict == 'G120C':
@@ -134,7 +140,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.label_pix = 24
             else:  # 滚轮下滚
                 self.label_pix -= 2
-                if self.label_pix <=16:
+                if self.label_pix <= 16:
                     self.label_pix = 16
             # print(self.label_pix)
             label_pix = 'font-size:' + str(self.label_pix) + 'px;'
@@ -143,29 +149,29 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.update()
 
     def keyReleaseEvent(self, QKeyEvent):
-        if QKeyEvent.key()==Qt.Key_Control:
-            self.ctrlPressed=False
+        if QKeyEvent.key() == Qt.Key_Control:
+            self.ctrlPressed = False
         return super().keyReleaseEvent(QKeyEvent)
 
     def keyPressEvent(self, QKeyEvent):
-        if QKeyEvent.key()==Qt.Key_Control:
-            self.ctrlPressed=True
+        if QKeyEvent.key() == Qt.Key_Control:
+            self.ctrlPressed = True
         return super().keyPressEvent(QKeyEvent)
 
     def history_storage(self):
         errCode = self.lineEdit.text()
         indexFaultictionary = self.comboBox.currentIndex()
-        if indexFaultictionary ==0:
-            faultDictionaryHistory ='S120'
-        elif indexFaultictionary ==1:
-            faultDictionaryHistory ='G120C'
+        if indexFaultictionary == 0:
+            faultDictionaryHistory = 'S120'
+        elif indexFaultictionary == 1:
+            faultDictionaryHistory = 'G120C'
         faultHistoryInformation = faultDictionaryHistory + '-' + errCode
-        if len(self.errCodeList) <self.maximum_storage_history:
+        if len(self.errCodeList) < self.maximum_storage_history:
             if faultHistoryInformation not in self.errCodeList:
-                self.errCodeList.insert(0,faultHistoryInformation)
+                self.errCodeList.insert(0, faultHistoryInformation)
         else:
             if faultHistoryInformation not in self.errCodeList:
-                self.errCodeList.insert(0,faultHistoryInformation)
+                self.errCodeList.insert(0, faultHistoryInformation)
                 self.errCodeList.pop()
         self.listWidget.clear()
         self.listWidget.addItems(self.errCodeList)
@@ -174,13 +180,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         a_item = self.listWidget.selectedItems()[0]  # 获取选择的item
         index = self.listWidget.indexFromItem(a_item)  # 通过item获取选择的索引号
         message = self.errCodeList[index.row()]
-        switchDict = message.split('-',1)[0]
-        errCode = message.split('-',1)[1]
+        switchDict = message.split('-', 1)[0]
+        errCode = message.split('-', 1)[1]
         if switchDict == 'S120':
             errDictionary = './TXT/S120_failure_code_list.txt'
         elif switchDict == 'G120C':
             errDictionary = './TXT/G120C_failure_code_list.txt'
-        message = self.search_key_words(errDictionary,errCode,switchDict)
+        message = self.search_key_words(errDictionary, errCode, switchDict)
         self.label.setText(message)
         return
 
@@ -205,6 +211,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def test(self):
         self.textEdit.append('test message ~')
         return
+
 
 if __name__ == '__main__':
     QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
