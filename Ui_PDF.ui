@@ -193,8 +193,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>596</width>
-            <height>463</height>
+            <width>587</width>
+            <height>441</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
@@ -257,7 +257,7 @@
      <x>0</x>
      <y>0</y>
      <width>902</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -270,8 +270,10 @@
     <property name="title">
      <string>功能</string>
     </property>
+    <addaction name="actionloadProfileG120C"/>
+    <addaction name="actionloadProfileS120"/>
     <addaction name="actionsearchERR"/>
-    <addaction name="actionopenHistory"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -284,15 +286,8 @@
      <addaction name="actionHistoryNumber"/>
      <addaction name="actionClearHistory"/>
     </widget>
-    <widget class="QMenu" name="menuloadProfile">
-     <property name="title">
-      <string>加载配置文件</string>
-     </property>
-     <addaction name="actionloadProfileS120"/>
-     <addaction name="actionloadProfileG120C"/>
-    </widget>
     <addaction name="menu_5"/>
-    <addaction name="menuloadProfile"/>
+    <addaction name="actionopenHistory"/>
     <addaction name="actionFontSize"/>
    </widget>
    <addaction name="menu"/>
