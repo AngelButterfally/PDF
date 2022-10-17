@@ -1,0 +1,12 @@
+// 添加文件夹忽略选项
+.vscode/*
+.idea/*
+dist/*
+__pycache__/*
+test01.ipynb
+test.ipynb
+S120_test.ipynb
+*.spec
+*.pyw
+build/*
+main.spec
