@@ -183,6 +183,6 @@ def CreateExcel(information1, information2, information3, information4, path):
     df.to_excel(path)
 
 
-# if __name__ == '__main__':
-#     a = g120c_scan_PDF_function('./PDF/G120C_failure_code_list.pdf')
-#     print(a)
+if __name__ == '__main__':
+    a = g120c_scan_PDF_function('./PDF/G120C_failure_code_list.pdf')
+    print(a)

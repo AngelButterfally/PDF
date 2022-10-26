@@ -80,11 +80,12 @@ def g120c_scan_PDF_function(pdfPath):
             countNumber = 0
             for x in range(allLineNumber):
                 if self.search in allLine[x]:
-                    if '反应： ' not in allLine[x - 1]:
-                        self.name[self.number] = allLine[x - 1]
-                        self.lineNumber[self.number] = x - 1
-                        self.number = self.number + 1
-                        countNumber = self.number
+                    if '信息类别： ' not in allLine[x - 1]:
+                        if '组件： ' not in allLine[x - 1]:
+                            self.name[self.number] = allLine[x - 1]
+                            self.lineNumber[self.number] = x - 1
+                            self.number = self.number + 1
+                            countNumber = self.number
 
         def searchInformation(self):  # 检索信息值和信息类别
             global countNumber
@@ -118,7 +119,7 @@ def g120c_scan_PDF_function(pdfPath):
     Reason.searchInformation1()
     reasonNumber = countNumber
 
-    Processing = Foo('处理： ', processing, processingNumber, processingLocation)
+    Processing = Foo('排除方法： ', processing, processingNumber, processingLocation)
     Processing.searchInformation1()
     processingNumber = countNumber
 
@@ -164,7 +165,7 @@ def g120c_scan_PDF_function(pdfPath):
         CreateExcel(failure, reaction,
                     reason, processing, excelPath)
     if os.path.isfile(excelPath) == False:
-        txt_to_excel_result = '文件生成失败! 请选择G120C故障手册文件!'
+        txt_to_excel_result = '文件生成失败! 请选择G120X故障手册文件!'
         txtDocument = './TXT'
         txtName = file_name[0]+'.txt'
         os.remove(os.path.join(txtDocument, txtName))
@@ -177,8 +178,8 @@ def g120c_scan_PDF_function(pdfPath):
 
 
 def CreateExcel(information1, information2, information3, information4, path):
-    data = {'故障名称': information1, '信息类别': information2,
-            '原因': information3, '处理': information4}
+    data = {'故障名称': information1, '反应': information2,
+            '原因': information3, '排除方法': information4}
     df = pd.DataFrame(data)
     df.to_excel(path)
 
