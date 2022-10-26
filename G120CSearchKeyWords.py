@@ -1,6 +1,6 @@
 import os
 
-def get_all_lines(txtPath = './TXT/S120_failure_Code_list.txt'):
+def get_all_lines(txtPath = './TXT/G120C_failure_Code_list.txt'):
     ## 获取每行的信息和内容
     with open(txtPath, 'r', encoding = 'utf-8') as f:
         allLine = f.readlines()
@@ -212,6 +212,6 @@ def g120c_getFailureInformation(txtPath, targetCode = 'N01004'):
         missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
         return missionFailed
 
-if __name__ == '__main__':
-    a = g120c_getFailureInformation('./TXT/G120C_failure_Code_list.txt', 'N01004')
-    print(a)
+# if __name__ == '__main__':
+#     a = g120c_getFailureInformation('./TXT/G120C_failure_Code_list.txt', 'N01004')
+#     print(a)

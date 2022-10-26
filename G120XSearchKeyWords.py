@@ -1,6 +1,6 @@
 import os
 
-def get_all_lines(txtPath = './TXT/S120_failure_Code_list.txt'):
+def get_all_lines(txtPath = './TXT/G120X_failure_Code_list.txt'):
     ## 获取每行的信息和内容
     with open(txtPath, 'r', encoding = 'utf-8') as f:
         allLine = f.readlines()
@@ -33,21 +33,9 @@ def data_process(allLine, allLineNumber, dataClass):
     failureNumber = 0
     failureLocation = {}
 
-    informationValue = {}           #信息值
-    informationValueNumber = 0
-    informationValueLocation = {}
-
-    informationCatefory = {}        #信息类别
-    informationCateforyNumber = 0
-    informationCateforyLocation = {}
-
-    drivingObject = {}
-    drivingObjectNumber = 0         #驱动对象数量
-    drivingObjectLocation = {}    #驱动对象所在首行
-
-    component = {}
-    componentNumber = 0             #组件数量 
-    componentLocation = {}        #组件所在行
+    reaction = {}        #反应
+    reactionNumber = 0
+    reactionLocation = {}
 
     reason = {}
     reasonNumber = 0                #原因数量
@@ -55,62 +43,28 @@ def data_process(allLine, allLineNumber, dataClass):
 
     processing = {}
     processingNumber = 0            #处理数量
-    processingLocation = {}       #处理所在首行
+    processingLocation = {}       #处理所在首行reaction
 
     #####################
     ###基于常规方法编写###
     #####################
     for x in range(allLineNumber):
-        if "信息值： " in allLine[x]:
+        if "反应： " in allLine[x]:
             # print(allLine[i])
             failure[failureNumber] = allLine[x - 1]                 #故障码和名称
-            informationValue[failureNumber] = allLine[x]            #信息值
-            informationCatefory[failureNumber] = allLine[x + 1]     #信息类别
+            reaction[failureNumber] = allLine[x]                    #反应
 
             failureLocation[failureNumber] = x - 1                  #故障码所在行
-            informationValueLocation[informationValueNumber] = x
-            informationCateforyLocation[informationCateforyNumber] = x + 1
+            reactionLocation[reactionNumber] = x
 
             failureNumber = failureNumber + 1
-            informationValueNumber = informationValueNumber + 1
-            informationCateforyNumber = informationCateforyNumber + 1
-        if "驱动对象： " in allLine[x]:
-            drivingObjectLocation[drivingObjectNumber] = x
-            drivingObjectNumber = drivingObjectNumber + 1
-        if "组件： " in allLine[x]:
-            componentLocation[componentNumber] = x
-            componentNumber = componentNumber + 1
+            reactionNumber = reactionNumber + 1
         if "原因： " in  allLine[x]:
             reasonLocation[reasonNumber] = x
             reasonNumber = reasonNumber + 1
-        if "处理： " in allLine[x]:
+        if "排除方法： " in allLine[x]:
             processingLocation[processingNumber] = x
             processingNumber = processingNumber + 1
-
-    ##提取驱动对象和组件
-    if drivingObjectNumber != componentNumber:
-        print("信息提取有误！03")
-        print(drivingObjectNumber)
-        print(componentNumber)
-    else:
-        for x in range(drivingObjectNumber):
-            ##提取组件
-            component[x] = allLine[componentLocation[x]]
-            ##提取驱动对象
-            if drivingObjectLocation[x] == componentLocation[x] - 1:        #如果驱动对象只有一行
-                drivingObject[x] = allLine[drivingObjectLocation[x]]
-            else:
-                dataDrivingObject = ''                                      #如果驱动对象有多行
-                lineRange = componentLocation[x] - drivingObjectLocation[x]
-                for y in range(lineRange): 
-                    if y == 0:   
-                        lineNumber = drivingObjectLocation[x] + y
-                        dataDrivingObject = dataDrivingObject + allLine[lineNumber]
-                        drivingObject[x] = dataDrivingObject
-                    else:
-                        lineNumber = drivingObjectLocation[x] + y
-                        dataDrivingObject = dataDrivingObject + '\t' + '\t' + allLine[lineNumber]
-                        drivingObject[x] = dataDrivingObject
 
     ##提取原因和处理
     if reasonNumber != processingNumber:
@@ -165,30 +119,10 @@ def data_process(allLine, allLineNumber, dataClass):
                         dataProcess = dataProcess + '\t' + '\t' + allLine[lineNumber]
                         processing[x] = dataProcess
     
-    # if dataClass == 'failure':
-    #     return failure, failureNumber,failureLocation
-    # elif dataClass == 'informationValue':
-    #     return informationValue, informationValueNumber, informationValueLocation
-    # elif dataClass == 'informationCatefory':
-    #     return informationCatefory, informationCateforyNumber, informationCateforyLocation
-    # elif dataClass == 'drivingObject':
-    #     return drivingObject, drivingObjectNumber, drivingObjectLocation
-    # elif dataClass == 'component':
-    #     return component, componentNumber, componentLocation
-    # elif dataClass == 'reason':
-    #     return reason, reasonNumber, reasonLocation
-    # elif dataClass == 'processing':
-    #     return processing, processingNumber, processingLocation
     if dataClass == 'failure':
         return failure, failureNumber
-    elif dataClass == 'informationValue':
-        return informationValue, informationValueNumber
-    elif dataClass == 'informationCatefory':
-        return informationCatefory, informationCateforyNumber
-    elif dataClass == 'drivingObject':
-        return drivingObject, drivingObjectNumber
-    elif dataClass == 'component':
-        return component, componentNumber
+    elif dataClass == 'reaction':
+        return reaction, reactionNumber
     elif dataClass == 'reason':
         return reason, reasonNumber
     elif dataClass == 'processing':
@@ -221,7 +155,7 @@ def formatting1(name, content, number):
         information[n] = result
     return information
 
-def s120_getFailureInformation(txtPath, targetCode = 'N01004'):
+def g120c_getFailureInformation(txtPath, targetCode = 'N01004'):
     '''提取指定故障码的相关信息（提取单个故障码）,输入故障码词典、故障码数量、故障码所在行位置词典、要检索的故障码、输出被检索的故障码和相关信息'''
     allLine, allLineNumber = get_all_lines(txtPath)
 
@@ -229,21 +163,9 @@ def s120_getFailureInformation(txtPath, targetCode = 'N01004'):
     code, name = cutMessage(failure, failureNumber)
     failure = formatting(code, name, failureNumber)
 
-    informationValue, informationValueNumber = data_process(allLine,allLineNumber,'informationValue')
-    name, content = cutMessage(informationValue, informationValueNumber)
-    informationValue = formatting1(name, content, informationValueNumber) 
-
-    informationCatefory, informationCateforyNumber = data_process(allLine,allLineNumber,'informationCatefory')
-    name, content = cutMessage(informationCatefory, informationCateforyNumber)
-    informationCatefory = formatting1(name, content, informationCateforyNumber) 
-
-    drivingObject, drivingObjectNumber = data_process(allLine,allLineNumber,'drivingObject')
-    name, content = cutMessage(drivingObject, drivingObjectNumber)
-    drivingObject = formatting1(name, content, drivingObjectNumber)
-
-    component, componentNumber = data_process(allLine,allLineNumber,'component')
-    name, content = cutMessage(component, componentNumber)
-    component = formatting(name, content, componentNumber)
+    reaction, reactionNumber = data_process(allLine,allLineNumber,'reaction')
+    name, content = cutMessage(reaction, reactionNumber)
+    reaction = formatting(name, content, reactionNumber) 
 
     reason, reasonNumber = data_process(allLine,allLineNumber,'reason')
     name, content = cutMessage(reason, reasonNumber)
@@ -270,8 +192,7 @@ def s120_getFailureInformation(txtPath, targetCode = 'N01004'):
         for i in range(targetCount):
             serialNumber = targetNumber[i]
             dataTargetDic[i] = ''
-            dataTargetDic[i] = failure[serialNumber] + informationValue[serialNumber] + informationCatefory[serialNumber] + \
-                drivingObject[serialNumber] + component[serialNumber] + reason[serialNumber] + processing[serialNumber]
+            dataTargetDic[i] = failure[serialNumber] + reaction[serialNumber] + reason[serialNumber] + processing[serialNumber]
         
         dataTarget = ''
         for j in range(targetCount):
@@ -283,6 +204,6 @@ def s120_getFailureInformation(txtPath, targetCode = 'N01004'):
         missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
         return missionFailed
 
-# if __name__ == '__main__':
-#     a = s120_getFailureInformation('./TXT/S120_failure_Code_list.txt', 'N01004')
-#     print(a)
+if __name__ == '__main__':
+    a = g120c_getFailureInformation('./TXT/G120X_failure_Code_list.txt', 'N01004')
+    print(a)

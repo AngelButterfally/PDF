@@ -37,7 +37,7 @@ def g120c_scan_PDF_function(pdfPath):
         for line in allLine:
             if "故障和报警" in line:
                 continue
-            if "SINAMICS G120C" in line:
+            if "SINAMICS G120X" in line:
                 continue
             if "参数手册," in line:
                 continue
@@ -53,9 +53,9 @@ def g120c_scan_PDF_function(pdfPath):
     failureNumber = 0
     failureLocation = {}
 
-    informationCatefory = {}  # 信息类别
-    informationCateforyNumber = 0
-    informationCateforyLocation = {}
+    reaction = {}        #反应
+    reactionNumber = 0
+    reactionLocation = {}
 
     reason = {}
     reasonNumber = 0  # 原因数量
@@ -80,7 +80,7 @@ def g120c_scan_PDF_function(pdfPath):
             countNumber = 0
             for x in range(allLineNumber):
                 if self.search in allLine[x]:
-                    if '信息值： ' not in allLine[x - 1]:
+                    if '反应： ' not in allLine[x - 1]:
                         self.name[self.number] = allLine[x - 1]
                         self.lineNumber[self.number] = x - 1
                         self.number = self.number + 1
@@ -105,14 +105,14 @@ def g120c_scan_PDF_function(pdfPath):
                     self.number = self.number + 1
                     countNumber = self.number
 
-    Failure = Foo('信息类别： ', failure, failureNumber, failureLocation)
+    Failure = Foo('反应： ', failure, failureNumber, failureLocation)
     Failure.searchError()
     failureNumber = countNumber
 
-    InformationCatefory = Foo('信息类别： ', informationCatefory,
-                              informationCateforyNumber, informationCateforyLocation)
-    InformationCatefory.searchInformation()
-    informationCateforyNumber = countNumber
+    Reaction = Foo('反应： ', reaction,
+                              reactionNumber, reactionLocation)
+    Reaction.searchInformation()
+    reactionNumber = countNumber
 
     Reason = Foo('原因： ', reason, reasonNumber, reasonLocation)
     Reason.searchInformation1()
@@ -160,8 +160,8 @@ def g120c_scan_PDF_function(pdfPath):
                     dataProcess = dataProcess + allLine[lineNumber]
                     processing[x] = dataProcess
     excelPath = './EXCEL/'+file_name[0]+'.xlsx'
-    if failureNumber == informationCateforyNumber:
-        CreateExcel(failure, informationCatefory,
+    if failureNumber == reactionNumber:
+        CreateExcel(failure, reaction,
                     reason, processing, excelPath)
     if os.path.isfile(excelPath) == False:
         txt_to_excel_result = '文件生成失败! 请选择G120C故障手册文件!'
@@ -183,6 +183,6 @@ def CreateExcel(information1, information2, information3, information4, path):
     df.to_excel(path)
 
 
-# if __name__ == '__main__':
-#     a = g120c_scan_PDF_function('./PDF/G120C_failure_code_list.pdf')
-#     print(a)
+if __name__ == '__main__':
+    a = g120c_scan_PDF_function('./PDF/G120X_failure_code_list.pdf')
+    print(a)
