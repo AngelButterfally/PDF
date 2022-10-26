@@ -6,8 +6,10 @@ from PyQt5.QtCore import *
 from Ui_PDF import Ui_MainWindow
 from S120ScanPDF import s120_scan_PDF_function
 from G120CScanPDF import g120c_scan_PDF_function
+from G120XScanPDF import g120x_scan_PDF_function
 from S120SearchKeyWords import s120_getFailureInformation
 from G120CSearchKeyWords import g120c_getFailureInformation
+from G120XSearchKeyWords import g120x_getFailureInformation
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -66,12 +68,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def choose_errInfo_repository_FUNCTION(self):
         if self.comboBox.currentIndex() == 0:
             self.currentDict = 'S120'
-            self.textEdit.append('已加载S120故障信息库')
+            self.textEdit.append('已加载 S120 故障信息库')
             self.faultDictionaryPath = './TXT/S120_failure_code_list.txt'
         elif self.comboBox.currentIndex() == 1:
             self.currentDict = 'G120C'
-            self.textEdit.append('已加载G120C故障信息库')
+            self.textEdit.append('已加载 G120C 故障信息库')
             self.faultDictionaryPath = './TXT/G120C_failure_code_list.txt'
+        elif self.comboBox.currentIndex() == 2:
+            self.currentDict = 'G120X'
+            self.textEdit.append('已加载 G120X 故障信息库')
+            self.faultDictionaryPath = './TXT/G120X_failure_code_list.txt'
+        elif self.comboBox.currentIndex() == 3:
+            self.currentDict = 'HAHA'
+            self.textEdit.append('已加载 HAHA 故障信息库')
+            self.faultDictionaryPath = './TXT/G120X_failure_code_list.txt'
 
     def load_profile_S120_FUNCTION(self):
         filename = QFileDialog.getOpenFileName(
@@ -86,6 +96,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self, "选择G120C故障手册文件", ".", "PDF Files (*.pdf)")
         result = g120c_scan_PDF_function(filename[0])
         self.textEdit.append('正在执行: G120C文档扫描')
+        self.textEdit.append(result)
+        return
+
+    def load_profile_G120X_FUNCTION(self):
+        filename = QFileDialog.getOpenFileName(
+            self, "选择G120X故障手册文件", ".", "PDF Files (*.pdf)")
+        result = g120x_scan_PDF_function(filename[0])
+        self.textEdit.append('正在执行: G120X文档扫描')
         self.textEdit.append(result)
         return
 
@@ -132,6 +150,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             message = s120_getFailureInformation(errDictionaryPath, errCode)
         elif switchDict == 'G120C':
             message = g120c_getFailureInformation(errDictionaryPath, errCode)
+        elif switchDict == 'G120X':
+            message = g120x_getFailureInformation(errDictionaryPath, errCode)
         return message
 
     def wheelEvent(self, event):
@@ -170,6 +190,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             faultDictionaryHistory = 'S120'
         elif indexFaultictionary == 1:
             faultDictionaryHistory = 'G120C'
+        elif indexFaultictionary == 2:
+            faultDictionaryHistory = 'G120X'
         faultHistoryInformation = faultDictionaryHistory + '-' + errCode
         if len(self.errCodeList) < self.maximum_storage_history:
             if faultHistoryInformation not in self.errCodeList:
@@ -191,6 +213,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             errDictionary = './TXT/S120_failure_code_list.txt'
         elif switchDict == 'G120C':
             errDictionary = './TXT/G120C_failure_code_list.txt'
+        elif switchDict == 'G120X':
+            errDictionary = './TXT/G120X_failure_code_list.txt'
         message = self.search_key_words(errDictionary, errCode, switchDict)
         self.label.setText(message)
         return

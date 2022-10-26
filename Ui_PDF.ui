@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../../.designer/backup/RIAMB_LOGO.png</normaloff>../../.designer/backup/RIAMB_LOGO.png</iconset>
+    <normaloff>../.designer/backup/RIAMB_LOGO.png</normaloff>../.designer/backup/RIAMB_LOGO.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -117,6 +117,11 @@
          <item>
           <property name="text">
            <string>SINAMICS G120C故障手册</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>SINAMICS G120X故障手册</string>
           </property>
          </item>
         </widget>
@@ -370,7 +375,7 @@
   <action name="action1">
    <property name="icon">
     <iconset>
-     <normaloff>../../.designer/backup/icon/RIAMB_word.png</normaloff>../../.designer/backup/icon/RIAMB_word.png</iconset>
+     <normaloff>../.designer/backup/icon/RIAMB_word.png</normaloff>../.designer/backup/icon/RIAMB_word.png</iconset>
    </property>
    <property name="text">
     <string/>

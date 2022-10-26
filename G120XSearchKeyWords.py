@@ -155,7 +155,7 @@ def formatting1(name, content, number):
         information[n] = result
     return information
 
-def g120c_getFailureInformation(txtPath, targetCode = 'N01004'):
+def g120x_getFailureInformation(txtPath, targetCode = 'N01004'):
     '''提取指定故障码的相关信息（提取单个故障码）,输入故障码词典、故障码数量、故障码所在行位置词典、要检索的故障码、输出被检索的故障码和相关信息'''
     allLine, allLineNumber = get_all_lines(txtPath)
 
@@ -205,5 +205,5 @@ def g120c_getFailureInformation(txtPath, targetCode = 'N01004'):
         return missionFailed
 
 if __name__ == '__main__':
-    a = g120c_getFailureInformation('./TXT/G120X_failure_Code_list.txt', 'N01004')
+    a = g120x_getFailureInformation('./TXT/G120X_failure_Code_list.txt', 'N01004')
     print(a)

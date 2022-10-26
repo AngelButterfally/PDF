@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'c:\Users\Administrator\Desktop\PDF\Ui_PDF.ui'
+# Form implementation generated from reading ui file 'e:\PDF\Ui_PDF.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -16,7 +16,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(902, 720)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("c:\\Users\\Administrator\\Desktop\\PDF\\../../.designer/backup/RIAMB_LOGO.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("e:\\PDF\\../.designer/backup/RIAMB_LOGO.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -48,6 +48,7 @@ class Ui_MainWindow(object):
         self.comboBox = QtWidgets.QComboBox(self.widget)
         self.comboBox.setMinimumSize(QtCore.QSize(150, 0))
         self.comboBox.setObjectName("comboBox")
+        self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.gridLayout_6.addWidget(self.comboBox, 0, 0, 2, 1)
@@ -148,7 +149,7 @@ class Ui_MainWindow(object):
         self.actionchooseErrFile.setObjectName("actionchooseErrFile")
         self.action1 = QtWidgets.QAction(MainWindow)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("c:\\Users\\Administrator\\Desktop\\PDF\\../../.designer/backup/icon/RIAMB_word.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap("e:\\PDF\\../.designer/backup/icon/RIAMB_word.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action1.setIcon(icon1)
         self.action1.setText("")
         font = QtGui.QFont()
@@ -173,7 +174,7 @@ class Ui_MainWindow(object):
         self.action1_2.setCheckable(False)
         self.action1_2.setEnabled(True)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("c:\\Users\\Administrator\\Desktop\\PDF\\icon/RIAMB.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap("e:\\PDF\\icon/RIAMB.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action1_2.setIcon(icon2)
         self.action1_2.setText("")
         font = QtGui.QFont()
@@ -210,6 +211,7 @@ class Ui_MainWindow(object):
         self.groupBox.setTitle(_translate("MainWindow", "信息栏"))
         self.comboBox.setItemText(0, _translate("MainWindow", "SINAMICS S120故障手册"))
         self.comboBox.setItemText(1, _translate("MainWindow", "SINAMICS G120C故障手册"))
+        self.comboBox.setItemText(2, _translate("MainWindow", "SINAMICS G120X故障手册"))
         self.lineEdit.setText(_translate("MainWindow", "F01000"))
         self.pushButton.setText(_translate("MainWindow", "故障码检索"))
         self.groupBox_2.setTitle(_translate("MainWindow", "故障内容显示"))
