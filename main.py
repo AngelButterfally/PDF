@@ -35,7 +35,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setGeometry(150, 150, 1550, 800)
         self.statusShowTime()
         self.lineEdit.setValidator(QRegExpValidator(QRegExp("[A-Z0-9]+$")))
-        self.textEdit.append('已加载S120故障信息库')
+        self.textEdit.append('已加载 S120 故障信息库')
         self.label.setStyleSheet('font-size:20px;')
         self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.label_icon.setPixmap(QPixmap("./icon/RIAMB_word.png"))
