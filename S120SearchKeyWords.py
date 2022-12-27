@@ -264,7 +264,7 @@ def s120_getFailureInformation(txtPath, targetCode = 'N01004'):
                 targetNumber[targetCount] = m
                 missionComplete = True
                 targetCount = targetCount + 1           
-
+    flagBit = True
     if missionComplete == True:
         dataTargetDic = {}
         for i in range(targetCount):
@@ -278,11 +278,20 @@ def s120_getFailureInformation(txtPath, targetCode = 'N01004'):
             dataTarget = dataTarget + dataTargetDic[j]
             if j != targetCount - 1:
                 dataTarget = dataTarget + '\n'
-        return dataTarget
+        flagBit = True
+        return dataTarget,flagBit
     else:
         missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
-        return missionFailed
+        flagBit = False
+        return missionFailed,flagBit
+
+def getAllFalureCodeS120():
+    allLine, allLineNumber = get_all_lines('./TXT/S120_failure_code_list.txt')
+    failure, failureNumber = data_process(allLine,allLineNumber,'failure')
+    dict_code, name = cutMessage(failure, failureNumber)
+    list_code = list(dict_code.values())
+    return list_code
 
 # if __name__ == '__main__':
-#     a = s120_getFailureInformation('./TXT/S120_failure_Code_list.txt', 'N01004')
-#     print(a)
+#     a = s120_getFailureInformation('./TXT/S120_failure_Code_list.txt', 'N0004')
+#     print(a[0])

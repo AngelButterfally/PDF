@@ -7,9 +7,9 @@ from Ui_PDF import Ui_MainWindow
 from S120ScanPDF import s120_scan_PDF_function
 from G120CScanPDF import g120c_scan_PDF_function
 from G120XScanPDF import g120x_scan_PDF_function
-from S120SearchKeyWords import s120_getFailureInformation
-from G120CSearchKeyWords import g120c_getFailureInformation
-from G120XSearchKeyWords import g120x_getFailureInformation
+from S120SearchKeyWords import s120_getFailureInformation, getAllFalureCodeS120
+from G120CSearchKeyWords import g120c_getFailureInformation, getAllFalureCodeG120C
+from G120XSearchKeyWords import g120x_getFailureInformation, getAllFalureCodeG120X
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -18,6 +18,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.iniVariable()
         self.iniUI()
+        self.initAllFalureCode()
         self.connectFunction()
 
     def iniVariable(self):
@@ -28,6 +29,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.errCodeList = []
         self.maximum_storage_history = 10
         self.currentDict = 'S120'
+        self.allFalureCodeS120 = []
+        self.allFalureCodeG120X = []
+        self.allFalureCodeG120C = []
+        self.flagBit = True
 
     def iniUI(self):
         self.setWindowTitle('北自所自控事业部故障码检索系统')
@@ -40,6 +45,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.label_icon.setPixmap(QPixmap("./icon/RIAMB_word.png"))
         self.textEdit.append('软件初始化完成。')
+        self.TEST()
 
     def connectFunction(self):
         # self.pushButton.clicked.connect(self.show_txt)
@@ -64,20 +70,46 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionFontSize.triggered.connect(self.font_size_FUNCTION)
         self.actionopenHistory.triggered.connect(
             self.show_history_dockwidget_FUNCTION)
+        # listwigiet右键菜单
+        self.listWidget.customContextMenuRequested.connect(self.listWidget_right_menu)
+
+    def initAllFalureCode(self):
+        self.allFalureCodeS120 = getAllFalureCodeG120C()
+        self.allFalureCodeG120X = getAllFalureCodeG120X()
+        self.allFalureCodeG120C = getAllFalureCodeS120()
+        self.completer_G120C = QCompleter(self.allFalureCodeS120)
+        self.completer_G120X = QCompleter(self.allFalureCodeG120X)
+        self.completer_S120 = QCompleter(self.allFalureCodeG120C)
+        # 设置匹配模式  有三种： Qt.MatchStartsWith 开头匹配（默认）  Qt.MatchContains 内容匹配  Qt.MatchEndsWith 结尾匹配
+        self.completer_G120C.setFilterMode(Qt.MatchContains)
+        self.completer_G120X.setFilterMode(Qt.MatchContains)
+        self.completer_S120.setFilterMode(Qt.MatchContains)
+        # 设置补全模式  有三种： QCompleter.PopupCompletion（默认）  QCompleter.InlineCompletion   QCompleter.UnfilteredPopupCompletion
+        self.completer_G120C.setCompletionMode(QCompleter.PopupCompletion)
+        self.completer_G120X.setCompletionMode(QCompleter.PopupCompletion)
+        self.completer_S120.setCompletionMode(QCompleter.PopupCompletion)
+        self.lineEdit.setCompleter(self.completer_S120)
+        return
 
     def choose_errInfo_repository_FUNCTION(self):
         if self.comboBox.currentIndex() == 0:
             self.currentDict = 'S120'
             self.textEdit.append('已加载 S120 故障信息库')
             self.faultDictionaryPath = './TXT/S120_failure_code_list.txt'
+            self.lineEdit.setCompleter(self.completer_S120)
+            self.label.clear()
         elif self.comboBox.currentIndex() == 1:
             self.currentDict = 'G120C'
             self.textEdit.append('已加载 G120C 故障信息库')
             self.faultDictionaryPath = './TXT/G120C_failure_code_list.txt'
+            self.lineEdit.setCompleter(self.completer_G120C)
+            self.label.clear()
         elif self.comboBox.currentIndex() == 2:
             self.currentDict = 'G120X'
             self.textEdit.append('已加载 G120X 故障信息库')
             self.faultDictionaryPath = './TXT/G120X_failure_code_list.txt'
+            self.lineEdit.setCompleter(self.completer_G120X)
+            self.label.clear()
         elif self.comboBox.currentIndex() == 3:
             self.currentDict = 'HAHA'
             self.textEdit.append('已加载 HAHA 故障信息库')
@@ -137,7 +169,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def search_key_words_FUNCTION(self):
         errCode = self.lineEdit.text()
-        message = self.search_key_words(
+        message, self.flagBit = self.search_key_words(
             self.faultDictionaryPath, errCode, self.currentDict)
         self.label.setText(message)
         return
@@ -147,12 +179,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def search_key_words(self, errDictionaryPath, errCode, switchDict):
         if switchDict == 'S120':
-            message = s120_getFailureInformation(errDictionaryPath, errCode)
+            message, flagBit = s120_getFailureInformation(
+                errDictionaryPath, errCode)
         elif switchDict == 'G120C':
-            message = g120c_getFailureInformation(errDictionaryPath, errCode)
+            message, flagBit = g120c_getFailureInformation(
+                errDictionaryPath, errCode)
         elif switchDict == 'G120X':
-            message = g120x_getFailureInformation(errDictionaryPath, errCode)
-        return message
+            message, flagBit = g120x_getFailureInformation(
+                errDictionaryPath, errCode)
+        return message, flagBit
 
     def wheelEvent(self, event):
         if self.ctrlPressed == True:
@@ -184,24 +219,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         return super().keyPressEvent(QKeyEvent)
 
     def history_storage(self):
-        errCode = self.lineEdit.text()
-        indexFaultictionary = self.comboBox.currentIndex()
-        if indexFaultictionary == 0:
-            faultDictionaryHistory = 'S120'
-        elif indexFaultictionary == 1:
-            faultDictionaryHistory = 'G120C'
-        elif indexFaultictionary == 2:
-            faultDictionaryHistory = 'G120X'
-        faultHistoryInformation = faultDictionaryHistory + '-' + errCode
-        if len(self.errCodeList) < self.maximum_storage_history:
-            if faultHistoryInformation not in self.errCodeList:
-                self.errCodeList.insert(0, faultHistoryInformation)
-        else:
-            if faultHistoryInformation not in self.errCodeList:
-                self.errCodeList.insert(0, faultHistoryInformation)
-                self.errCodeList.pop()
-        self.listWidget.clear()
-        self.listWidget.addItems(self.errCodeList)
+        if self.flagBit is True:
+            errCode = self.lineEdit.text()
+            indexFaultictionary = self.comboBox.currentIndex()
+            if indexFaultictionary == 0:
+                faultDictionaryHistory = 'S120'
+            elif indexFaultictionary == 1:
+                faultDictionaryHistory = 'G120C'
+            elif indexFaultictionary == 2:
+                faultDictionaryHistory = 'G120X'
+            faultHistoryInformation = faultDictionaryHistory + '-' + errCode
+            if len(self.errCodeList) < self.maximum_storage_history:
+                if faultHistoryInformation not in self.errCodeList:
+                    self.errCodeList.insert(0, faultHistoryInformation)
+            else:
+                if faultHistoryInformation not in self.errCodeList:
+                    self.errCodeList.insert(0, faultHistoryInformation)
+                    self.errCodeList.pop()
+            self.listWidget.clear()
+            self.listWidget.addItems(self.errCodeList)
+        elif self.flagBit is False:
+            return
 
     def history_show(self):
         a_item = self.listWidget.selectedItems()[0]  # 获取选择的item
@@ -216,8 +254,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         elif switchDict == 'G120X':
             errDictionary = './TXT/G120X_failure_code_list.txt'
         message = self.search_key_words(errDictionary, errCode, switchDict)
-        self.label.setText(message)
+        self.label.setText(message[0])
         return
+    
+    def listWidget_right_menu(self, pos):
+        menu = QtWidgets.QMenu()
+        opt1 = menu.addAction("删除条目")
+        # opt2 = menu.addAction("action2")
+        hitIndex = self.listWidget.indexAt(pos).column()
+        if hitIndex > -1:
+        	#获取item内容
+            # name=self.listWidget.item(hitIndex).text()
+            action = menu.exec_(self.listWidget.mapToGlobal(pos))
+            if action == opt1:
+                self.errCodeList.pop(hitIndex)
+                self.listWidget.clear()
+                self.listWidget.addItems(self.errCodeList)
+            # elif action == opt2:
+            #     print(hitIndex)
+            #     return
+
 
     def showCurrentTime(self, timeLabel):
         '''获取当前时间'''
@@ -237,8 +293,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.info.setText('-Code by RIAMB-')
         self.statusBar.addPermanentWidget(self.info, 0)
 
-    def test(self):
+    def TEST(self):
         self.textEdit.append('test message ~')
+
         return
 
 

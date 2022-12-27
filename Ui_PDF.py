@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'e:\PDF\Ui_PDF.ui'
+# Form implementation generated from reading ui file 'd:\VS2019Project\PDF\Ui_PDF.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -16,7 +16,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(902, 720)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("e:\\PDF\\../.designer/backup/RIAMB_LOGO.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("d:\\VS2019Project\\PDF\\../.designer/backup/RIAMB_LOGO.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -125,6 +125,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.dockWidgetContents_2)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.listWidget = QtWidgets.QListWidget(self.dockWidgetContents_2)
+        self.listWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.listWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.listWidget.setFlow(QtWidgets.QListView.TopToBottom)
         self.listWidget.setObjectName("listWidget")
@@ -149,7 +150,7 @@ class Ui_MainWindow(object):
         self.actionchooseErrFile.setObjectName("actionchooseErrFile")
         self.action1 = QtWidgets.QAction(MainWindow)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("e:\\PDF\\../.designer/backup/icon/RIAMB_word.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap("d:\\VS2019Project\\PDF\\../.designer/backup/icon/RIAMB_word.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action1.setIcon(icon1)
         self.action1.setText("")
         font = QtGui.QFont()
@@ -174,7 +175,7 @@ class Ui_MainWindow(object):
         self.action1_2.setCheckable(False)
         self.action1_2.setEnabled(True)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("e:\\PDF\\icon/RIAMB.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap("d:\\VS2019Project\\PDF\\icon/RIAMB.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action1_2.setIcon(icon2)
         self.action1_2.setText("")
         font = QtGui.QFont()
@@ -212,7 +213,7 @@ class Ui_MainWindow(object):
         self.comboBox.setItemText(0, _translate("MainWindow", "SINAMICS S120故障手册"))
         self.comboBox.setItemText(1, _translate("MainWindow", "SINAMICS G120C故障手册"))
         self.comboBox.setItemText(2, _translate("MainWindow", "SINAMICS G120X故障手册"))
-        self.lineEdit.setText(_translate("MainWindow", "F01000"))
+        self.lineEdit.setPlaceholderText(_translate("MainWindow", "输入故障码"))
         self.pushButton.setText(_translate("MainWindow", "故障码检索"))
         self.groupBox_2.setTitle(_translate("MainWindow", "故障内容显示"))
         self.menu.setTitle(_translate("MainWindow", "文件"))
