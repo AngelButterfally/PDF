@@ -294,7 +294,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.statusBar.addPermanentWidget(self.info, 0)
 
     def TEST(self):
-        self.textEdit.append('test message ~')
+        # self.textEdit.append('test message ~')
 
         return
 
