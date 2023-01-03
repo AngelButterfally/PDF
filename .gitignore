@@ -3,6 +3,7 @@
 .idea/*
 dist/*
 __pycache__/*
+测试案例/*
 test01.ipynb
 test.ipynb
 S120_test.ipynb

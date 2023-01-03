@@ -2,29 +2,33 @@ import os
 
 def get_all_lines(txtPath = './TXT/S120_failure_Code_list.txt'):
     ## 获取每行的信息和内容
-    with open(txtPath, 'r', encoding = 'utf-8') as f:
-        allLine = f.readlines()
-        f.close()
-    allLineNumber = len(allLine)
-    # print(allLineNumber)
+    if  os.path.exists('./TXT/S120_failure_code_list.txt') :
+        with open(txtPath, 'r', encoding = 'utf-8') as f:
+            allLine = f.readlines()
+            f.close()
+        allLineNumber = len(allLine)
+        # print(allLineNumber)
 
-    ## 剔除不需要的信息行
-    with open(txtPath,"w",encoding="utf-8") as f_w:
-        for line in allLine:
-            if "故障和报警" in line:
-                continue
-            if "SINAMICS S120/S150" in line:
-                continue
-            if "参数手册," in line:
-                continue
-            f_w.write(line)
+        ## 剔除不需要的信息行
+        with open(txtPath,"w",encoding="utf-8") as f_w:
+            for line in allLine:
+                if "故障和报警" in line:
+                    continue
+                if "SINAMICS S120/S150" in line:
+                    continue
+                if "参数手册," in line:
+                    continue
+                f_w.write(line)
 
-    ## 刷新每行的信息和内容
-    with open(txtPath, 'r', encoding = 'utf-8') as f:
-        allLine = f.readlines()
-        f.close()
-    allLineNumber = len(allLine)
-    # print(allLineNumber)
+        ## 刷新每行的信息和内容
+        with open(txtPath, 'r', encoding = 'utf-8') as f:
+            allLine = f.readlines()
+            f.close()
+        allLineNumber = len(allLine)
+        # print(allLineNumber)
+    else:
+        allLine = []
+        allLineNumber=[]
     return allLine,allLineNumber
 
 def data_process(allLine, allLineNumber, dataClass):
@@ -286,10 +290,13 @@ def s120_getFailureInformation(txtPath, targetCode = 'N01004'):
         return missionFailed,flagBit
 
 def getAllFalureCodeS120():
-    allLine, allLineNumber = get_all_lines('./TXT/S120_failure_code_list.txt')
-    failure, failureNumber = data_process(allLine,allLineNumber,'failure')
-    dict_code, name = cutMessage(failure, failureNumber)
-    list_code = list(dict_code.values())
+    if os.path.exists('./TXT/S120_failure_code_list.txt') :
+        allLine, allLineNumber = get_all_lines('./TXT/S120_failure_code_list.txt')
+        failure, failureNumber = data_process(allLine,allLineNumber,'failure')
+        dict_code, name = cutMessage(failure, failureNumber)
+        list_code = list(dict_code.values())
+    else:
+        list_code = []
     return list_code
 
 # if __name__ == '__main__':

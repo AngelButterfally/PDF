@@ -275,8 +275,10 @@
     <property name="title">
      <string>功能</string>
     </property>
-    <addaction name="actionsearchERR"/>
     <addaction name="actionopenHistory"/>
+    <addaction name="actionRestart"/>
+    <addaction name="actionOpenKeyboard"/>
+    <addaction name="actionTEST"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -421,7 +423,7 @@
   </action>
   <action name="actionFontSize">
    <property name="text">
-    <string>字体大小</string>
+    <string>字体大小设置</string>
    </property>
   </action>
   <action name="action1_2">
@@ -458,6 +460,21 @@
   <action name="actionopenHistory">
    <property name="text">
     <string>历史记录</string>
+   </property>
+  </action>
+  <action name="actionRestart">
+   <property name="text">
+    <string>重启软件</string>
+   </property>
+  </action>
+  <action name="actionTEST">
+   <property name="text">
+    <string>TEST</string>
+   </property>
+  </action>
+  <action name="actionOpenKeyboard">
+   <property name="text">
+    <string>打开虚拟键盘</string>
    </property>
   </action>
  </widget>
