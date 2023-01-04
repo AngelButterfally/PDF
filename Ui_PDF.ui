@@ -19,6 +19,84 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0" colspan="2">
+     <widget class="QWidget" name="widget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>20</height>
+       </size>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_6">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>故障码检索</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" rowspan="2" colspan="2">
+        <widget class="QLineEdit" name="lineEdit">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maxLength">
+          <number>6</number>
+         </property>
+         <property name="placeholderText">
+          <string>输入故障码</string>
+         </property>
+         <property name="cursorMoveStyle">
+          <enum>Qt::LogicalMoveStyle</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" rowspan="2">
+        <widget class="QComboBox" name="comboBox">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+         <item>
+          <property name="text">
+           <string>SINAMICS S120故障手册</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>SINAMICS G120C故障手册</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>SINAMICS G120X故障手册</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
     <item row="2" column="0" colspan="2">
      <widget class="QGroupBox" name="groupBox">
       <property name="minimumSize">
@@ -71,84 +149,6 @@
          </property>
          <property name="readOnly">
           <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <widget class="QWidget" name="widget" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>20</height>
-       </size>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_6">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <item row="0" column="0" rowspan="2">
-        <widget class="QComboBox" name="comboBox">
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>0</height>
-          </size>
-         </property>
-         <item>
-          <property name="text">
-           <string>SINAMICS S120故障手册</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>SINAMICS G120C故障手册</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>SINAMICS G120X故障手册</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="0" column="1" rowspan="2" colspan="2">
-        <widget class="QLineEdit" name="lineEdit">
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maxLength">
-          <number>6</number>
-         </property>
-         <property name="placeholderText">
-          <string>输入故障码</string>
-         </property>
-         <property name="cursorMoveStyle">
-          <enum>Qt::LogicalMoveStyle</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QPushButton" name="pushButton">
-         <property name="text">
-          <string>故障码检索</string>
          </property>
         </widget>
        </item>
@@ -278,7 +278,6 @@
     <addaction name="actionopenHistory"/>
     <addaction name="actionRestart"/>
     <addaction name="actionOpenKeyboard"/>
-    <addaction name="actionTEST"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -297,14 +296,22 @@
      </property>
      <addaction name="actionloadProfileS120"/>
      <addaction name="actionloadProfileG120C"/>
+     <addaction name="actionloadProfileG120X"/>
     </widget>
     <addaction name="menu_5"/>
     <addaction name="menuloadProfile"/>
     <addaction name="actionFontSize"/>
    </widget>
+   <widget class="QMenu" name="menuD">
+    <property name="title">
+     <string>关于</string>
+    </property>
+    <addaction name="actionAboutQT"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
+   <addaction name="menuD"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget_History">
    <property name="sizePolicy">
@@ -320,7 +327,7 @@
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QListWidget" name="listWidget">
        <property name="contextMenuPolicy">
@@ -334,6 +341,13 @@
        </property>
        <property name="spacing">
         <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QProgressBar" name="progressBar">
+       <property name="value">
+        <number>24</number>
        </property>
       </widget>
      </item>
@@ -475,6 +489,16 @@
   <action name="actionOpenKeyboard">
    <property name="text">
     <string>打开虚拟键盘</string>
+   </property>
+  </action>
+  <action name="actionAboutQT">
+   <property name="text">
+    <string>关于QT</string>
+   </property>
+  </action>
+  <action name="actionloadProfileG120X">
+   <property name="text">
+    <string>加载G120X配置文件</string>
    </property>
   </action>
  </widget>
