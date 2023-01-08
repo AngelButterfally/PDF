@@ -19,6 +19,7 @@
   - 对于没有搜索结果的故障码，不将其显示在历史记录中
 
 ### V1.4
+
 - 添加软件重启功能。
 - 添加启动系统虚拟键盘功能
 - 完善故障码输入框
@@ -26,31 +27,34 @@
 - 完善历史记录功能模块内容
   - 鼠标右键菜单添加选项，一键删除全部历史记录
 - 添加软件启动配置文件自检功能
-  - 软件启动，若配置文件夹TXT中未发现相关故障.txt文件，则进行提示，并将软件中对应的功能模块变为不可选择状态
-  - 软件启动时将自动选择存在的故障.txt文件
-  - 若三种故障.txt文件均不存在，则软件报错
+  - 软件启动，若配置文件夹 TXT 中未发现相关故障.txt 文件，则进行提示，并将软件中对应的功能模块变为不可选择状态
+  - 软件启动时将自动选择存在的故障.txt 文件
+  - 若三种故障.txt 文件均不存在，则软件报错
 
 ### V1.5
-- 菜单栏添加‘关于QT’
+
+- 菜单栏添加‘关于 QT’
 - 完善搜索框功能
-  - 当输入故障码小于6个字符并点击回车时，自动匹配提示框中第一个最相关的故障码。
+  - 当输入故障码小于 6 个字符并点击回车时，自动匹配提示框中第一个最相关的故障码。
 - 完善任务栏图标的显示功能
 - 将所有相对路径替换为自动生成的绝对路径，使软件在不同安装路径下能够运行
-- 新增多线程模块，将扫描PDF功能转入子线程中进行，主界面仍可进行操作。
-  - 子线程继承自Qobject类而不是QThread类
+- 新增多线程模块，将扫描 PDF 功能转入子线程中进行，主界面仍可进行操作。
+  - 子线程继承自 Qobject 类而不是 QThread 类
   - 实现了主线程与子线程之间的双向通信
-###### TODO 
 
+#### V1.5.1 Release
 
-## 环境配置
+- 发布软件可运行 EXE 安装包
+
+## 环境配置(CONDA)
+
+conda activate XXX
 pip install PyQt5 -i https://pypi.douban.com/simple
 pip install PyQt5-tools -i https://pypi.douban.com/simple
-pip3 install PyInstaller -i https://pyp.douban.com/simple
-pip3 install --upgrade PyInstaller pyinstaller-hooks-contrib
+pip install PyInstaller -i https://pyp.douban.com/simple
+pip install --upgrade PyInstaller pyinstaller-hooks-contrib
 
-## 软件打包
-pyinstaller --onefile app.py
-pyinstaller --windowed --icon=hand.ico app.py
-pyinstaller --windowed --icon=hand.ico --add-data="hand.ico;." app.py
+## 软件打包步骤
+
+pyinstaller main.spec
 InstallForge
-

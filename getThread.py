@@ -48,6 +48,3 @@ class WorkThread_3(QObject):
             result = g120x_scan_PDF_function(str)
         self.toMainMessage_3.emit(result)
         self.flagFinish_3.emit('finish_T3')
-
-
-    

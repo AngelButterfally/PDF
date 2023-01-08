@@ -179,7 +179,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.flagLoadTXT[i] = False
                 else:
                     self.flagLoadTXT[i] = True
-        elif self.flagLoadTXT[0] == False and self.flagLoadTXT[1] == False and self.flagLoadTXT[2] == False or not os.path.exists(folder_name):
+        if self.flagLoadTXT[0] == False and self.flagLoadTXT[1] == False and self.flagLoadTXT[2] == False:
+            self.comboBox.setDisabled(True)
+            self.pushButton.setDisabled(True)
+            self.flagSysERR = True
+        if os.path.exists(folder_name) ==False:
             self.comboBox.setDisabled(True)
             self.pushButton.setDisabled(True)
             self.flagSysERR = True

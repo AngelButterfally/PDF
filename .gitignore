@@ -4,10 +4,11 @@
 dist/*
 __pycache__/*
 测试案例/*
+build/*
+dist/*
 test01.ipynb
 test.ipynb
 S120_test.ipynb
-*.spec
+maincopy.spec
 *.pyw
 build/*
-main.spec
