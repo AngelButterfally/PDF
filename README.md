@@ -46,16 +46,21 @@
 
 - 发布软件可运行 EXE 安装包
 - 使用`^\s*(?=\r?$)\n`删除所有空行
-
+#### V1.5.2
+- 更新`README.md`
 ## 环境配置(CONDA)
 
-conda activate XXX
-pip install PyQt5 -i https://pypi.douban.com/simple
-pip install PyQt5-tools -i https://pypi.douban.com/simple
-pip install PyInstaller -i https://pyp.douban.com/simple
-pip install --upgrade PyInstaller pyinstaller-hooks-contrib
+- conda activate XXX
+- pip install PyQt5 -i https://pypi.douban.com/simple
+- pip install PyQt5-tools -i https://pypi.douban.com/simple
+- pip install PyInstaller -i https://pyp.douban.com/simple
+- pip install --upgrade PyInstaller pyinstaller-hooks-contrib
 
-## 软件打包步骤
+## 软件打包
+##### 使用`pyinstaller + InstallForge`
 
-pyinstaller main.spec
-InstallForge
+1. pyinstaller main.spec
+2. 使用 InstallForge 打包为安装包`.exe`格式文件
+
+## 软件安装运行
+运行`./著作权/故障检索软件安装包.exe`即可安装软件
