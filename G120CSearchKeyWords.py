@@ -1,6 +1,4 @@
 import os
-
-
 def get_all_lines(txtPath='./TXT/G120C_failure_Code_list.txt'):
     # 获取每行的信息和内容
     if os.path.exists('./TXT/G120C_failure_code_list.txt'):
@@ -9,7 +7,6 @@ def get_all_lines(txtPath='./TXT/G120C_failure_Code_list.txt'):
             f.close()
         allLineNumber = len(allLine)
         # print(allLineNumber)
-
         # 剔除不需要的信息行
         with open(txtPath, "w", encoding="utf-8") as f_w:
             for line in allLine:
@@ -20,7 +17,6 @@ def get_all_lines(txtPath='./TXT/G120C_failure_Code_list.txt'):
                 if "参数手册," in line:
                     continue
                 f_w.write(line)
-
         # 刷新每行的信息和内容
         with open(txtPath, 'r', encoding='utf-8') as f:
             allLine = f.readlines()
@@ -31,26 +27,20 @@ def get_all_lines(txtPath='./TXT/G120C_failure_Code_list.txt'):
         allLine = []
         allLineNumber = []
     return allLine, allLineNumber
-
-
 def data_process(allLine, allLineNumber, dataClass):
     # 筛选分类文本信息
     failure = {}  # 故障码和名称
     failureNumber = 0
     failureLocation = {}
-
     informationCatefory = {}  # 信息类别
     informationCateforyNumber = 0
     informationCateforyLocation = {}
-
     reason = {}
     reasonNumber = 0  # 原因数量
     reasonLocation = {}  # 原因所在首行
-
     processing = {}
     processingNumber = 0  # 处理数量
     processingLocation = {}  # 处理所在首行
-
     #####################
     ###基于常规方法编写###
     #####################
@@ -59,10 +49,8 @@ def data_process(allLine, allLineNumber, dataClass):
             # print(allLine[i])
             failure[failureNumber] = allLine[x - 1]  # 故障码和名称
             informationCatefory[failureNumber] = allLine[x]  # 信息类别
-
             failureLocation[failureNumber] = x - 1  # 故障码所在行
             informationCateforyLocation[informationCateforyNumber] = x
-
             failureNumber = failureNumber + 1
             informationCateforyNumber = informationCateforyNumber + 1
         if "原因： " in allLine[x]:
@@ -71,7 +59,6 @@ def data_process(allLine, allLineNumber, dataClass):
         if "处理： " in allLine[x]:
             processingLocation[processingNumber] = x
             processingNumber = processingNumber + 1
-
     # 提取原因和处理
     if reasonNumber != processingNumber:
         print("信息提取有误！01")
@@ -127,7 +114,6 @@ def data_process(allLine, allLineNumber, dataClass):
                         dataProcess = dataProcess + '\t' + \
                             '\t' + allLine[lineNumber]
                         processing[x] = dataProcess
-
     # if dataClass == 'failure':
     #     return failure, failureNumber,failureLocation
     # elif dataClass == 'informationCatefory':
@@ -144,10 +130,7 @@ def data_process(allLine, allLineNumber, dataClass):
         return reason, reasonNumber
     elif dataClass == 'processing':
         return processing, processingNumber
-
 # 切割名称和内容
-
-
 def cutMessage(inforamtion, number):
     '''输入存有名称和内容的词典及总数'''
     '''输出存有名称和内容的词典name和content'''
@@ -159,46 +142,35 @@ def cutMessage(inforamtion, number):
         name[n] = str2[0]
         content[n] = str2[1]
     return name, content
-
-
 def formatting(name, content, number):
     information = {}
     for n in range(number):
         result = name[n] + '\t' + '\t' + content[n]
         information[n] = result
     return information
-
-
 def formatting1(name, content, number):
     information = {}
     for n in range(number):
         result = name[n] + '\t' + content[n]
         information[n] = result
     return information
-
-
 def g120c_getFailureInformation(txtPath, targetCode='N01004'):
     '''提取指定故障码的相关信息（提取单个故障码）,输入故障码词典、故障码数量、故障码所在行位置词典、要检索的故障码、输出被检索的故障码和相关信息'''
     allLine, allLineNumber = get_all_lines(txtPath)
-
     failure, failureNumber = data_process(allLine, allLineNumber, 'failure')
     code, name = cutMessage(failure, failureNumber)
     failure = formatting(code, name, failureNumber)
-
     informationCatefory, informationCateforyNumber = data_process(
         allLine, allLineNumber, 'informationCatefory')
     name, content = cutMessage(informationCatefory, informationCateforyNumber)
     informationCatefory = formatting1(name, content, informationCateforyNumber)
-
     reason, reasonNumber = data_process(allLine, allLineNumber, 'reason')
     name, content = cutMessage(reason, reasonNumber)
     reason = formatting(name, content, reasonNumber)
-
     processing, processingNumber = data_process(
         allLine, allLineNumber, 'processing')
     name, content = cutMessage(processing, processingNumber)
     processing = formatting(name, content, processingNumber)
-
     missionComplete = False  # 故障码查询结果标志位
     targetNumber = {}
     targetCount = 0
@@ -218,7 +190,6 @@ def g120c_getFailureInformation(txtPath, targetCode='N01004'):
             dataTargetDic[i] = ''
             dataTargetDic[i] = failure[serialNumber] + informationCatefory[serialNumber] + \
                 reason[serialNumber] + processing[serialNumber]
-
         dataTarget = ''
         for j in range(targetCount):
             dataTarget = dataTarget + dataTargetDic[j]
@@ -230,8 +201,6 @@ def g120c_getFailureInformation(txtPath, targetCode='N01004'):
         missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
         flagBit = False
         return missionFailed, flagBit
-
-
 def getAllFalureCodeG120C():
     if os.path.exists('./TXT/G120C_failure_code_list.txt') :
         allLine, allLineNumber = get_all_lines('./TXT/G120C_failure_code_list.txt')
@@ -241,7 +210,6 @@ def getAllFalureCodeG120C():
     else:
         list_code = []
     return list_code
-
 # if __name__ == '__main__':
     # a = g120c_getFailureInformation('./TXT/G120C_failure_Code_list.txt', 'N01004')
     # allLine, allLineNumber = get_all_lines('./TXT/G120C_failure_Code_list.txt')

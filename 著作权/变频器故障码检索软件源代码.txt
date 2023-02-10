@@ -1,0 +1,2597 @@
+G120CScanPDF.py
+import pdfplumber
+import pandas as pd
+import os
+def g120c_scan_PDF_function(pdfPath):
+    '''PDF扫描'''
+    # 依次扫描PDF页面并串联文本
+    if os.path.isfile(pdfPath) == False:
+        return '没有选择文件!'
+    base_name = os.path.basename(pdfPath)
+    file_name = os.path.splitext(base_name)
+    pageText = ''
+    with pdfplumber.open(pdfPath) as pdf:
+        for n in range(len(pdf.pages)):
+            singlePage = pdf.pages[n]
+            singlePageText = singlePage.extract_text()
+            pageText = pageText + singlePageText
+    # 完整文本转存TXT格式
+    txtPath = './TXT/'+file_name[0]+'.txt'
+    with open(txtPath, 'w', encoding='utf-8') as c:
+        c.write(pageText)
+        c.close()
+    if os.path.isfile(txtPath) == False:
+        return 'txt文件生成失败!'
+    else:
+        pdf_to_txt_result = 'txt文件生成完成! '+'保存在 ' + file_name[0]+'.txt 中。\n'
+    # 获取每行的信息和内容
+    with open(txtPath, 'r', encoding='utf-8') as f:
+        allLine = f.readlines()
+        f.close()
+    allLineNumber = len(allLine)
+    # 剔除不需要的信息行
+    with open(txtPath, "w", encoding="utf-8") as f_w:
+        for line in allLine:
+            if "故障和报警" in line:
+                continue
+            if "SINAMICS G120C" in line:
+                continue
+            if "参数手册," in line:
+                continue
+            f_w.write(line)
+    # 刷新每行的信息和内容
+    with open(txtPath, 'r', encoding='utf-8') as f:
+        allLine = f.readlines()
+        f.close()
+    allLineNumber = len(allLine)
+    # 筛选分类文本信息
+    failure = {}  # 故障码和名称
+    failureNumber = 0
+    failureLocation = {}
+    informationCatefory = {}  # 信息类别
+    informationCateforyNumber = 0
+    informationCateforyLocation = {}
+    reason = {}
+    reasonNumber = 0  # 原因数量
+    reasonLocation = {}  # 原因所在首行
+    processing = {}
+    processingNumber = 0  # 处理数量
+    processingLocation = {}  # 处理所在首行
+    ########################
+    ###基于面向对象思想编写###
+    ########################
+    class Foo:
+        def __init__(self, search, name, number, lineNumber):
+            self.search = search
+            self.name = name
+            self.number = number
+            self.lineNumber = lineNumber
+        def searchError(self):  # 检索故障码
+            global countNumber
+            countNumber = 0
+            for x in range(allLineNumber):
+                if self.search in allLine[x]:
+                    if '信息值： ' not in allLine[x - 1]:
+                        self.name[self.number] = allLine[x - 1]
+                        self.lineNumber[self.number] = x - 1
+                        self.number = self.number + 1
+                        countNumber = self.number
+        def searchInformation(self):  # 检索信息值和信息类别
+            global countNumber
+            countNumber = 0
+            for x in range(allLineNumber):
+                if self.search in allLine[x]:
+                    self.name[self.number] = allLine[x]
+                    self.lineNumber[self.number] = x
+                    self.number = self.number + 1
+                    countNumber = self.number
+        def searchInformation1(self):  # 检索其他需求信息
+            global countNumber
+            countNumber = 0
+            for x in range(allLineNumber):
+                if self.search in allLine[x]:
+                    self.lineNumber[self.number] = x
+                    self.number = self.number + 1
+                    countNumber = self.number
+    Failure = Foo('信息类别： ', failure, failureNumber, failureLocation)
+    Failure.searchError()
+    failureNumber = countNumber
+    InformationCatefory = Foo('信息类别： ', informationCatefory,
+                              informationCateforyNumber, informationCateforyLocation)
+    InformationCatefory.searchInformation()
+    informationCateforyNumber = countNumber
+    Reason = Foo('原因： ', reason, reasonNumber, reasonLocation)
+    Reason.searchInformation1()
+    reasonNumber = countNumber
+    Processing = Foo('处理： ', processing, processingNumber, processingLocation)
+    Processing.searchInformation1()
+    processingNumber = countNumber
+    # 提取原因和处理
+    if reasonNumber != processingNumber:
+        print("信息提取有误！")
+        print(reasonNumber)
+        print(processingNumber)
+    elif reasonNumber != failureNumber:
+        print("信息提取有误！")
+    else:
+        for x in range(reasonNumber):
+            # 提取原因
+            if reasonLocation[x] == processingLocation[x] - 1:  # 如果原因只有一行
+                reason[x] = allLine[reasonLocation[x]]
+            else:
+                dataReason = ''  # 如果原因有多行
+                lineRange = processingLocation[x] - reasonLocation[x]
+                for y in range(lineRange):
+                    lineNumber = reasonLocation[x] + y
+                    dataReason = dataReason + allLine[lineNumber]
+                    reason[x] = dataReason
+            # 提取处理
+            if x != processingNumber - 1:  # 如果处理的不是最后一条
+                if processingLocation[x] == failureLocation[x + 1] - 1:  # 如果处理只有一行
+                    processing[x] = allLine[processingLocation[x]]
+                else:
+                    dataProcess = ''  # 如果处理有多行
+                    lineRange = failureLocation[x + 1] - processingLocation[x]
+                    for y in range(lineRange):
+                        lineNumber = processingLocation[x] + y
+                        dataProcess = dataProcess + allLine[lineNumber]
+                        processing[x] = dataProcess
+            else:
+                dataProcess = ''
+                lineRange = allLineNumber - processingLocation[x]
+                for y in range(lineRange):
+                    lineNumber = processingLocation[x] + y
+                    dataProcess = dataProcess + allLine[lineNumber]
+                    processing[x] = dataProcess
+    excelPath = './EXCEL/'+file_name[0]+'.xlsx'
+    if failureNumber == informationCateforyNumber:
+        CreateExcel(failure, informationCatefory,
+                    reason, processing, excelPath)
+    if os.path.isfile(excelPath) == False:
+        txt_to_excel_result = '文件生成失败! 请选择G120C故障手册文件!'
+        txtDocument = './TXT'
+        txtName = file_name[0]+'.txt'
+        os.remove(os.path.join(txtDocument, txtName))
+        return txt_to_excel_result
+    else:
+        txt_to_excel_result = pdf_to_txt_result + \
+            'Excel文件生成完成! '+'保存在 ' + file_name[0]+'.xlsx 中。'
+    result = txt_to_excel_result
+    return result
+def CreateExcel(information1, information2, information3, information4, path):
+    data = {'故障名称': information1, '信息类别': information2,
+            '原因': information3, '处理': information4}
+    df = pd.DataFrame(data)
+    df.to_excel(path)
+if __name__ == '__main__':
+    a = g120c_scan_PDF_function('./PDF/G120C_failure_code_list.pdf')
+    print(a)
+G120CSearchKeyWords.py
+import os
+def get_all_lines(txtPath='./TXT/G120C_failure_Code_list.txt'):
+    # 获取每行的信息和内容
+    if os.path.exists('./TXT/G120C_failure_code_list.txt'):
+        with open(txtPath, 'r', encoding='utf-8') as f:
+            allLine = f.readlines()
+            f.close()
+        allLineNumber = len(allLine)
+        # print(allLineNumber)
+        # 剔除不需要的信息行
+        with open(txtPath, "w", encoding="utf-8") as f_w:
+            for line in allLine:
+                if "故障和报警" in line:
+                    continue
+                if "SINAMICS S120/S150" in line:
+                    continue
+                if "参数手册," in line:
+                    continue
+                f_w.write(line)
+        # 刷新每行的信息和内容
+        with open(txtPath, 'r', encoding='utf-8') as f:
+            allLine = f.readlines()
+            f.close()
+        allLineNumber = len(allLine)
+        # print(allLineNumber)
+    else:
+        allLine = []
+        allLineNumber = []
+    return allLine, allLineNumber
+def data_process(allLine, allLineNumber, dataClass):
+    # 筛选分类文本信息
+    failure = {}  # 故障码和名称
+    failureNumber = 0
+    failureLocation = {}
+    informationCatefory = {}  # 信息类别
+    informationCateforyNumber = 0
+    informationCateforyLocation = {}
+    reason = {}
+    reasonNumber = 0  # 原因数量
+    reasonLocation = {}  # 原因所在首行
+    processing = {}
+    processingNumber = 0  # 处理数量
+    processingLocation = {}  # 处理所在首行
+    #####################
+    ###基于常规方法编写###
+    #####################
+    for x in range(allLineNumber):
+        if "信息类别： " in allLine[x]:
+            # print(allLine[i])
+            failure[failureNumber] = allLine[x - 1]  # 故障码和名称
+            informationCatefory[failureNumber] = allLine[x]  # 信息类别
+            failureLocation[failureNumber] = x - 1  # 故障码所在行
+            informationCateforyLocation[informationCateforyNumber] = x
+            failureNumber = failureNumber + 1
+            informationCateforyNumber = informationCateforyNumber + 1
+        if "原因： " in allLine[x]:
+            reasonLocation[reasonNumber] = x
+            reasonNumber = reasonNumber + 1
+        if "处理： " in allLine[x]:
+            processingLocation[processingNumber] = x
+            processingNumber = processingNumber + 1
+    # 提取原因和处理
+    if reasonNumber != processingNumber:
+        print("信息提取有误！01")
+        print(reasonNumber)
+        print(processingNumber)
+    elif reasonNumber != failureNumber:
+        print("信息提取有误！02")
+    else:
+        for x in range(reasonNumber):
+            # 提取原因
+            if reasonLocation[x] == processingLocation[x] - 1:  # 如果原因只有一行
+                reason[x] = allLine[reasonLocation[x]]
+            else:
+                dataReason = ''  # 如果原因有多行
+                lineRange = processingLocation[x] - reasonLocation[x]
+                for y in range(lineRange):
+                    if y == 0:
+                        lineNumber = reasonLocation[x] + y
+                        dataReason = dataReason + allLine[lineNumber]
+                        reason[x] = dataReason
+                    else:
+                        lineNumber = reasonLocation[x] + y
+                        dataReason = dataReason + '\t' + \
+                            '\t' + allLine[lineNumber]
+                        reason[x] = dataReason
+            # 提取处理
+            if x != processingNumber - 1:  # 如果处理的不是最后一条
+                if processingLocation[x] == failureLocation[x + 1] - 1:  # 如果处理只有一行
+                    processing[x] = allLine[processingLocation[x]]
+                else:
+                    dataProcess = ''  # 如果处理有多行
+                    lineRange = failureLocation[x + 1] - processingLocation[x]
+                    for y in range(lineRange):
+                        if y == 0:
+                            lineNumber = processingLocation[x] + y
+                            dataProcess = dataProcess + allLine[lineNumber]
+                            processing[x] = dataProcess
+                        else:
+                            lineNumber = processingLocation[x] + y
+                            dataProcess = dataProcess + '\t' + \
+                                '\t' + allLine[lineNumber]
+                            processing[x] = dataProcess
+            else:
+                dataProcess = ''
+                lineRange = allLineNumber - processingLocation[x]
+                for y in range(lineRange):
+                    if y == 0:
+                        lineNumber = processingLocation[x] + y
+                        dataProcess = dataProcess + allLine[lineNumber]
+                        processing[x] = dataProcess
+                    else:
+                        lineNumber = processingLocation[x] + y
+                        dataProcess = dataProcess + '\t' + \
+                            '\t' + allLine[lineNumber]
+                        processing[x] = dataProcess
+    # if dataClass == 'failure':
+    #     return failure, failureNumber,failureLocation
+    # elif dataClass == 'informationCatefory':
+    #     return informationCatefory, informationCateforyNumber, informationCateforyLocation
+    # elif dataClass == 'reason':
+    #     return reason, reasonNumber, reasonLocation
+    # elif dataClass == 'processing':
+    #     return processing, processingNumber, processingLocation
+    if dataClass == 'failure':
+        return failure, failureNumber
+    elif dataClass == 'informationCatefory':
+        return informationCatefory, informationCateforyNumber
+    elif dataClass == 'reason':
+        return reason, reasonNumber
+    elif dataClass == 'processing':
+        return processing, processingNumber
+# 切割名称和内容
+def cutMessage(inforamtion, number):
+    '''输入存有名称和内容的词典及总数'''
+    '''输出存有名称和内容的词典name和content'''
+    name = {}
+    content = {}
+    for n in range(number):
+        str = inforamtion[n]
+        str2 = str.split(' ', 1)
+        name[n] = str2[0]
+        content[n] = str2[1]
+    return name, content
+def formatting(name, content, number):
+    information = {}
+    for n in range(number):
+        result = name[n] + '\t' + '\t' + content[n]
+        information[n] = result
+    return information
+def formatting1(name, content, number):
+    information = {}
+    for n in range(number):
+        result = name[n] + '\t' + content[n]
+        information[n] = result
+    return information
+def g120c_getFailureInformation(txtPath, targetCode='N01004'):
+    '''提取指定故障码的相关信息（提取单个故障码）,输入故障码词典、故障码数量、故障码所在行位置词典、要检索的故障码、输出被检索的故障码和相关信息'''
+    allLine, allLineNumber = get_all_lines(txtPath)
+    failure, failureNumber = data_process(allLine, allLineNumber, 'failure')
+    code, name = cutMessage(failure, failureNumber)
+    failure = formatting(code, name, failureNumber)
+    informationCatefory, informationCateforyNumber = data_process(
+        allLine, allLineNumber, 'informationCatefory')
+    name, content = cutMessage(informationCatefory, informationCateforyNumber)
+    informationCatefory = formatting1(name, content, informationCateforyNumber)
+    reason, reasonNumber = data_process(allLine, allLineNumber, 'reason')
+    name, content = cutMessage(reason, reasonNumber)
+    reason = formatting(name, content, reasonNumber)
+    processing, processingNumber = data_process(
+        allLine, allLineNumber, 'processing')
+    name, content = cutMessage(processing, processingNumber)
+    processing = formatting(name, content, processingNumber)
+    missionComplete = False  # 故障码查询结果标志位
+    targetNumber = {}
+    targetCount = 0
+    if len(targetCode) != 6:
+        missionComplete = False
+    else:
+        for m in range(failureNumber):
+            if targetCode in code[m]:
+                targetNumber[targetCount] = m
+                missionComplete = True
+                targetCount = targetCount + 1
+    flagBit = True
+    if missionComplete == True:
+        dataTargetDic = {}
+        for i in range(targetCount):
+            serialNumber = targetNumber[i]
+            dataTargetDic[i] = ''
+            dataTargetDic[i] = failure[serialNumber] + informationCatefory[serialNumber] + \
+                reason[serialNumber] + processing[serialNumber]
+        dataTarget = ''
+        for j in range(targetCount):
+            dataTarget = dataTarget + dataTargetDic[j]
+            if j != targetCount - 1:
+                dataTarget = dataTarget + '\n'
+        flagBit = True
+        return dataTarget, flagBit
+    else:
+        missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
+        flagBit = False
+        return missionFailed, flagBit
+def getAllFalureCodeG120C():
+    if os.path.exists('./TXT/G120C_failure_code_list.txt') :
+        allLine, allLineNumber = get_all_lines('./TXT/G120C_failure_code_list.txt')
+        failure, failureNumber = data_process(allLine, allLineNumber, 'failure')
+        dict_code, name = cutMessage(failure, failureNumber)
+        list_code = list(dict_code.values())
+    else:
+        list_code = []
+    return list_code
+# if __name__ == '__main__':
+    # a = g120c_getFailureInformation('./TXT/G120C_failure_Code_list.txt', 'N01004')
+    # allLine, allLineNumber = get_all_lines('./TXT/G120C_failure_Code_list.txt')
+    # failure, failureNumber = data_process(allLine,allLineNumber,'failure')
+    # code, name = cutMessage(failure, failureNumber)
+    # a = list(code.values())
+    # print(a)
+    # print(isinstance(code,dict))
+G120XScanPDF.py
+import pdfplumber
+import pandas as pd
+import os
+def g120x_scan_PDF_function(pdfPath):
+    '''PDF扫描'''
+    # 依次扫描PDF页面并串联文本
+    if os.path.isfile(pdfPath) == False:
+        return '没有选择文件!'
+    base_name = os.path.basename(pdfPath)
+    file_name = os.path.splitext(base_name)
+    pageText = ''
+    with pdfplumber.open(pdfPath) as pdf:
+        for n in range(len(pdf.pages)):
+            singlePage = pdf.pages[n]
+            singlePageText = singlePage.extract_text()
+            pageText = pageText + singlePageText
+    # 完整文本转存TXT格式
+    txtPath = './TXT/'+file_name[0]+'.txt'
+    with open(txtPath, 'w', encoding='utf-8') as c:
+        c.write(pageText)
+        c.close()
+    if os.path.isfile(txtPath) == False:
+        return 'txt文件生成失败!'
+    else:
+        pdf_to_txt_result = 'txt文件生成完成! '+'保存在 ' + file_name[0]+'.txt 中。\n'
+    # 获取每行的信息和内容
+    with open(txtPath, 'r', encoding='utf-8') as f:
+        allLine = f.readlines()
+        f.close()
+    allLineNumber = len(allLine)
+    # 剔除不需要的信息行
+    with open(txtPath, "w", encoding="utf-8") as f_w:
+        for line in allLine:
+            if "故障和报警" in line:
+                continue
+            if "SINAMICS G120X" in line:
+                continue
+            if "参数手册," in line:
+                continue
+            f_w.write(line)
+    # 刷新每行的信息和内容
+    with open(txtPath, 'r', encoding='utf-8') as f:
+        allLine = f.readlines()
+        f.close()
+    allLineNumber = len(allLine)
+    # 筛选分类文本信息
+    failure = {}  # 故障码和名称
+    failureNumber = 0
+    failureLocation = {}
+    reaction = {}        #反应
+    reactionNumber = 0
+    reactionLocation = {}
+    reason = {}
+    reasonNumber = 0  # 原因数量
+    reasonLocation = {}  # 原因所在首行
+    processing = {}
+    processingNumber = 0  # 处理数量
+    processingLocation = {}  # 处理所在首行
+    ########################
+    ###基于面向对象思想编写###
+    ########################
+    class Foo:
+        def __init__(self, search, name, number, lineNumber):
+            self.search = search
+            self.name = name
+            self.number = number
+            self.lineNumber = lineNumber
+        def searchError(self):  # 检索故障码
+            global countNumber
+            countNumber = 0
+            for x in range(allLineNumber):
+                if self.search in allLine[x]:
+                    if '信息类别： ' not in allLine[x - 1]:
+                        if '组件： ' not in allLine[x - 1]:
+                            self.name[self.number] = allLine[x - 1]
+                            self.lineNumber[self.number] = x - 1
+                            self.number = self.number + 1
+                            countNumber = self.number
+        def searchInformation(self):  # 检索信息值和信息类别
+            global countNumber
+            countNumber = 0
+            for x in range(allLineNumber):
+                if self.search in allLine[x]:
+                    self.name[self.number] = allLine[x]
+                    self.lineNumber[self.number] = x
+                    self.number = self.number + 1
+                    countNumber = self.number
+        def searchInformation1(self):  # 检索其他需求信息
+            global countNumber
+            countNumber = 0
+            for x in range(allLineNumber):
+                if self.search in allLine[x]:
+                    self.lineNumber[self.number] = x
+                    self.number = self.number + 1
+                    countNumber = self.number
+    Failure = Foo('反应： ', failure, failureNumber, failureLocation)
+    Failure.searchError()
+    failureNumber = countNumber
+    Reaction = Foo('反应： ', reaction,
+                              reactionNumber, reactionLocation)
+    Reaction.searchInformation()
+    reactionNumber = countNumber
+    Reason = Foo('原因： ', reason, reasonNumber, reasonLocation)
+    Reason.searchInformation1()
+    reasonNumber = countNumber
+    Processing = Foo('排除方法： ', processing, processingNumber, processingLocation)
+    Processing.searchInformation1()
+    processingNumber = countNumber
+    # 提取原因和处理
+    if reasonNumber != processingNumber:
+        print("信息提取有误！")
+        print(reasonNumber)
+        print(processingNumber)
+    elif reasonNumber != failureNumber:
+        print("信息提取有误！")
+    else:
+        for x in range(reasonNumber):
+            # 提取原因
+            if reasonLocation[x] == processingLocation[x] - 1:  # 如果原因只有一行
+                reason[x] = allLine[reasonLocation[x]]
+            else:
+                dataReason = ''  # 如果原因有多行
+                lineRange = processingLocation[x] - reasonLocation[x]
+                for y in range(lineRange):
+                    lineNumber = reasonLocation[x] + y
+                    dataReason = dataReason + allLine[lineNumber]
+                    reason[x] = dataReason
+            # 提取处理
+            if x != processingNumber - 1:  # 如果处理的不是最后一条
+                if processingLocation[x] == failureLocation[x + 1] - 1:  # 如果处理只有一行
+                    processing[x] = allLine[processingLocation[x]]
+                else:
+                    dataProcess = ''  # 如果处理有多行
+                    lineRange = failureLocation[x + 1] - processingLocation[x]
+                    for y in range(lineRange):
+                        lineNumber = processingLocation[x] + y
+                        dataProcess = dataProcess + allLine[lineNumber]
+                        processing[x] = dataProcess
+            else:
+                dataProcess = ''
+                lineRange = allLineNumber - processingLocation[x]
+                for y in range(lineRange):
+                    lineNumber = processingLocation[x] + y
+                    dataProcess = dataProcess + allLine[lineNumber]
+                    processing[x] = dataProcess
+    excelPath = './EXCEL/'+file_name[0]+'.xlsx'
+    if failureNumber == reactionNumber:
+        CreateExcel(failure, reaction,
+                    reason, processing, excelPath)
+    if os.path.isfile(excelPath) == False:
+        txt_to_excel_result = '文件生成失败! 请选择G120X故障手册文件!'
+        txtDocument = './TXT'
+        txtName = file_name[0]+'.txt'
+        os.remove(os.path.join(txtDocument, txtName))
+        return txt_to_excel_result
+    else:
+        txt_to_excel_result = pdf_to_txt_result + \
+            'Excel文件生成完成! '+'保存在 ' + file_name[0]+'.xlsx 中。'
+    result = txt_to_excel_result
+    return result
+def CreateExcel(information1, information2, information3, information4, path):
+    data = {'故障名称': information1, '反应': information2,
+            '原因': information3, '排除方法': information4}
+    df = pd.DataFrame(data)
+    df.to_excel(path)
+if __name__ == '__main__':
+    a = g120x_scan_PDF_function('./PDF/G120X_failure_code_list.pdf')
+    print(a)
+G120XSearchKeyWords.py
+import os
+def get_all_lines(txtPath = './TXT/G120X_failure_Code_list.txt'):
+    ## 获取每行的信息和内容
+    if  os.path.exists('./TXT/G120X_failure_Code_list.txt') :
+        with open(txtPath, 'r', encoding = 'utf-8') as f:
+            allLine = f.readlines()
+            f.close()
+        allLineNumber = len(allLine)
+        # print(allLineNumber)
+        ## 剔除不需要的信息行
+        with open(txtPath,"w",encoding="utf-8") as f_w:
+            for line in allLine:
+                if "故障和报警" in line:
+                    continue
+                if "SINAMICS S120/S150" in line:
+                    continue
+                if "参数手册," in line:
+                    continue
+                f_w.write(line)
+        ## 刷新每行的信息和内容
+        with open(txtPath, 'r', encoding = 'utf-8') as f:
+            allLine = f.readlines()
+            f.close()
+        allLineNumber = len(allLine)
+        # print(allLineNumber)
+    else:
+        allLine = []
+        allLineNumber=[]
+    return allLine,allLineNumber
+def data_process(allLine, allLineNumber, dataClass):
+    ## 筛选分类文本信息
+    failure = {}                #故障码和名称
+    failureNumber = 0
+    failureLocation = {}
+    reaction = {}        #反应
+    reactionNumber = 0
+    reactionLocation = {}
+    reason = {}
+    reasonNumber = 0                #原因数量
+    reasonLocation = {}           #原因所在首行
+    processing = {}
+    processingNumber = 0            #处理数量
+    processingLocation = {}       #处理所在首行reaction
+    #####################
+    ###基于常规方法编写###
+    #####################
+    for x in range(allLineNumber):
+        if "反应： " in allLine[x]:
+            # print(allLine[i])
+            failure[failureNumber] = allLine[x - 1]                 #故障码和名称
+            reaction[failureNumber] = allLine[x]                    #反应
+            failureLocation[failureNumber] = x - 1                  #故障码所在行
+            reactionLocation[reactionNumber] = x
+            failureNumber = failureNumber + 1
+            reactionNumber = reactionNumber + 1
+        if "原因： " in  allLine[x]:
+            reasonLocation[reasonNumber] = x
+            reasonNumber = reasonNumber + 1
+        if "排除方法： " in allLine[x]:
+            processingLocation[processingNumber] = x
+            processingNumber = processingNumber + 1
+    ##提取原因和处理
+    if reasonNumber != processingNumber:
+        print("信息提取有误！01")
+        print(reasonNumber)
+        print(processingNumber)
+    elif reasonNumber != failureNumber:
+        print("信息提取有误！02")
+    else:
+        for x in range(reasonNumber):
+            ##提取原因
+            if reasonLocation[x] == processingLocation[x] - 1:              #如果原因只有一行
+                reason[x] = allLine[reasonLocation[x]]
+            else:
+                dataReason = ''                                             #如果原因有多行
+                lineRange = processingLocation[x] - reasonLocation[x]
+                for y in range(lineRange):
+                    if y == 0:
+                        lineNumber = reasonLocation[x] + y
+                        dataReason = dataReason + allLine[lineNumber]
+                        reason[x] = dataReason
+                    else:
+                        lineNumber = reasonLocation[x] + y
+                        dataReason = dataReason + '\t' + '\t' + allLine[lineNumber]
+                        reason[x] = dataReason
+            ##提取处理
+            if x != processingNumber - 1:                                   #如果处理的不是最后一条
+                if processingLocation[x] == failureLocation[x + 1] - 1:     #如果处理只有一行
+                    processing[x] = allLine[processingLocation[x]]
+                else: 
+                    dataProcess = ''                                        #如果处理有多行
+                    lineRange = failureLocation[x + 1] - processingLocation[x]
+                    for y in range(lineRange):
+                        if y == 0:
+                            lineNumber = processingLocation[x] + y
+                            dataProcess = dataProcess + allLine[lineNumber]
+                            processing[x] = dataProcess
+                        else:
+                            lineNumber = processingLocation[x] + y
+                            dataProcess = dataProcess + '\t' + '\t' + allLine[lineNumber]
+                            processing[x] = dataProcess
+            else:
+                dataProcess = ''
+                lineRange = allLineNumber - processingLocation[x]
+                for y in range(lineRange):   
+                    if y == 0:
+                        lineNumber = processingLocation[x] + y
+                        dataProcess = dataProcess + allLine[lineNumber]
+                        processing[x] = dataProcess
+                    else:
+                        lineNumber = processingLocation[x] + y
+                        dataProcess = dataProcess + '\t' + '\t' + allLine[lineNumber]
+                        processing[x] = dataProcess
+    if dataClass == 'failure':
+        return failure, failureNumber
+    elif dataClass == 'reaction':
+        return reaction, reactionNumber
+    elif dataClass == 'reason':
+        return reason, reasonNumber
+    elif dataClass == 'processing':
+        return processing, processingNumber
+##切割名称和内容
+def cutMessage(inforamtion, number):
+    '''输入存有名称和内容的词典及总数'''
+    '''输出存有名称和内容的词典name和content'''
+    name = {}
+    content = {}
+    for n in range(number):
+        str = inforamtion[n]
+        str2 = str.split(' ', 1)
+        name[n] = str2[0]
+        content[n] = str2[1]
+    return name, content
+def formatting(name, content, number):
+    information = {}
+    for n in range(number):
+        result = name[n] + '\t' + '\t' + content[n]
+        information[n] = result
+    return information
+def formatting1(name, content, number):
+    information = {}
+    for n in range(number):
+        result = name[n] + '\t' + content[n]
+        information[n] = result
+    return information
+def g120x_getFailureInformation(txtPath, targetCode = 'N01004'):
+    '''提取指定故障码的相关信息（提取单个故障码）,输入故障码词典、故障码数量、故障码所在行位置词典、要检索的故障码、输出被检索的故障码和相关信息'''
+    allLine, allLineNumber = get_all_lines(txtPath)
+    failure, failureNumber = data_process(allLine,allLineNumber,'failure')
+    code, name = cutMessage(failure, failureNumber)
+    failure = formatting(code, name, failureNumber)
+    reaction, reactionNumber = data_process(allLine,allLineNumber,'reaction')
+    name, content = cutMessage(reaction, reactionNumber)
+    reaction = formatting(name, content, reactionNumber) 
+    reason, reasonNumber = data_process(allLine,allLineNumber,'reason')
+    name, content = cutMessage(reason, reasonNumber)
+    reason = formatting(name, content, reasonNumber)
+    processing, processingNumber = data_process(allLine,allLineNumber,'processing')
+    name, content = cutMessage(processing, processingNumber)
+    processing = formatting(name, content, processingNumber)
+    missionComplete = False     #故障码查询结果标志位
+    targetNumber = {}
+    targetCount = 0
+    if len(targetCode) != 6:
+        missionComplete = False
+    else:   
+        for m in range(failureNumber):
+            if targetCode in code[m]:
+                targetNumber[targetCount] = m
+                missionComplete = True
+                targetCount = targetCount + 1           
+    flagBit = True
+    if missionComplete == True:
+        dataTargetDic = {}
+        for i in range(targetCount):
+            serialNumber = targetNumber[i]
+            dataTargetDic[i] = ''
+            dataTargetDic[i] = failure[serialNumber] + reaction[serialNumber] + reason[serialNumber] + processing[serialNumber]
+        dataTarget = ''
+        for j in range(targetCount):
+            dataTarget = dataTarget + dataTargetDic[j]
+            if j != targetCount - 1:
+                dataTarget = dataTarget + '\n'
+        flagBit = True
+        return dataTarget,flagBit
+    else:
+        missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
+        flagBit = False
+        return missionFailed,flagBit
+def getAllFalureCodeG120X():
+    if os.path.exists('./TXT/G120X_failure_code_list.txt') :
+        allLine, allLineNumber = get_all_lines('./TXT/G120X_failure_code_list.txt')
+        failure, failureNumber = data_process(allLine,allLineNumber,'failure')
+        dict_code, name = cutMessage(failure, failureNumber)
+        list_code = list(dict_code.values())
+    else:
+        list_code = []
+    return list_code
+# if __name__ == '__main__':
+#     allLine, allLineNumber = get_all_lines('./TXT/G120X_failure_Code_list.txt')
+#     failure, failureNumber = data_process(allLine,allLineNumber,'failure')
+#     dict_code, name = cutMessage(failure, failureNumber)
+#     list_code = list(dict_code.values())
+#     print(list_code)getThread.py
+import os
+from PyQt5.QtCore import QThread, pyqtSignal,QObject
+from S120ScanPDF import s120_scan_PDF_function
+from G120CScanPDF import g120c_scan_PDF_function
+from G120XScanPDF import g120x_scan_PDF_function
+class WorkThread_1(QObject):
+    toMainMessage_1 = pyqtSignal(str)  # 值变化信号
+    fromMainMessage_1 = pyqtSignal(str)
+    flagFinish_1 = pyqtSignal(str)
+    def __init__(self):
+        super(WorkThread_1,self).__init__()
+    def processWork(self,str):
+        print('thread id', QThread.currentThread())
+        # print(str)
+        if os.path.exists(str):
+            result = s120_scan_PDF_function(str)
+        self.toMainMessage_1.emit(result)
+        self.flagFinish_1.emit('finish_T1')
+class WorkThread_2(QObject):
+    toMainMessage_2 = pyqtSignal(str)  # 值变化信号
+    fromMainMessage_2 = pyqtSignal(str)
+    flagFinish_2 = pyqtSignal(str)
+    def __init__(self):
+        super(WorkThread_2,self).__init__()
+    def processWork(self,str):
+        print('thread id', QThread.currentThread())
+        # print(str)
+        if os.path.exists(str):
+            result = g120c_scan_PDF_function(str)
+        self.toMainMessage_2.emit(result)
+        self.flagFinish_2.emit('finish_T2')
+class WorkThread_3(QObject):
+    toMainMessage_3 = pyqtSignal(str)  # 值变化信号
+    fromMainMessage_3 = pyqtSignal(str)
+    flagFinish_3 = pyqtSignal(str)
+    def __init__(self):
+        super(WorkThread_3,self).__init__()
+    def processWork(self,str):
+        print('thread id', QThread.currentThread())
+        # print(str)
+        if os.path.exists(str):
+            result = g120x_scan_PDF_function(str)
+        self.toMainMessage_3.emit(result)
+        self.flagFinish_3.emit('finish_T3')get_falt_dic_path.py
+import os
+def getFaltDictionaryPath():
+    baseDir = os.path.dirname(__file__)
+    path_1 = os.path.join(baseDir, "TXT", "S120_failure_code_list.txt")
+    path_2 = os.path.join(baseDir, "TXT", "G120C_failure_code_list.txt")
+    path_3 = os.path.join(baseDir, "TXT", "G120X_failure_code_list.txt")
+    faultDictionary = [[path_1,'S120'],[path_2,'G120C'],[path_3,'G120X']]
+    return faultDictionary
+# baseDir = os.path.dirname(__file__)
+# print(os.path.join(baseDir, "TXT22"))main.py
+import sys
+import os
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from Ui_PDF import Ui_MainWindow
+from getThread import WorkThread_1, WorkThread_2, WorkThread_3
+from S120SearchKeyWords import s120_getFailureInformation, getAllFalureCodeS120
+from G120CSearchKeyWords import g120c_getFailureInformation, getAllFalureCodeG120C
+from G120XSearchKeyWords import g120x_getFailureInformation, getAllFalureCodeG120X
+from get_falt_dic_path import getFaltDictionaryPath
+# 确保Windows系统下任务栏图标正常
+try:
+    from ctypes import windll  # Only exists on Windows.
+    myappid = 'myproduct.subproduct.version'
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
+class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
+    restarted = pyqtSignal(QWidget, str)
+    _Self = None  # 很重要,保留窗口引用
+    def __init__(self, isRestart='NULL', parent=None):
+        super(MainWindow, self).__init__(parent)
+        MainWindow._Self = self
+        self.setupUi(self)
+        self.iniFile()
+        self.iniVariable()
+        self.iniUI(isRestart=isRestart)
+        self.iniConfigFunction()
+        self.iniThread()
+        self.connectFunction()
+    def iniFile(self):
+        if not os.path.exists('./TXT'):
+            os.mkdir('./TXT')
+        if not os.path.exists('./PDF'):
+            os.mkdir('./PDF')
+        if not os.path.exists('./icon'):
+            os.mkdir('./icon')
+        if not os.path.exists('./EXCEL'):
+            os.mkdir('./EXCEL')
+        return
+    def iniVariable(self):
+        # txtFolderFileNum = len([name for name in os.listdir('./TXT') if os.path.isfile(os.path.join('./TXT', name))])
+        self.baseDir = os.path.dirname(__file__)
+        self.faultDictionary = getFaltDictionaryPath()
+        self.currentDictionaryPath = ''
+        self.currentDict = ''
+        self.currentAllFalure = []
+        self.currentCompleter = QCompleter
+        self.setFaltDictionaryNum = 3
+        self.count = 0
+        self.label_pix = 18
+        self.ctrlPressed = False
+        self.filePathPDF = ''
+        self.resultFromChildThreadPDF = ''
+        self.errCodeList = []
+        self.maximum_storage_history = 10
+        self.allFalureCodeS120 = []
+        self.allFalureCodeG120X = []
+        self.allFalureCodeG120C = []
+        # 标志位
+        self.flagBit = True
+        self.flagLoadTXT = [False]*self.setFaltDictionaryNum
+        self.flagSysERR = False
+    def iniUI(self, isRestart):
+        # 程序自检
+        if isRestart == 'restart':
+            self.textEdit.append('软件已完成重启。')
+        self.setWindowTitle('北自所自控事业部故障码检索系统')
+        self.setWindowIcon(
+            QIcon(os.path.join(self.baseDir, "icon", "RIAMB.ico")))
+        self.setGeometry(150, 150, 1550, 800)
+        self.lineEdit.setValidator(QRegExpValidator(QRegExp("[a-zA-Z0-9]+$")))
+        self.label.setStyleSheet('font-size:20px;')
+        self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.label_icon.setPixmap(
+            QPixmap(os.path.join(self.baseDir, "icon", "RIAMB_word.png")))
+        self.statusShowTime()
+    def iniConfigFunction(self):
+        '''软件配置'''
+        self.checkConfigurationFile(faltDictionary=self.faultDictionary)
+        if self.flagSysERR == False:
+            self.chooseDefaltDictionary()
+            self.choose_errInfo_repository_FUNCTION()
+            self.textEdit.append('软件初始化完成。')
+        else:
+            QMessageBox.critical(self, '错误', '配置文件错误。软件无法运行!')
+            self.textEdit.append('软件初始化失败！请尝试重启！')
+    def iniThread(self):
+        # 子线程
+        self.thread_1 = QThread()  # S120
+        self.thread_2 = QThread()  # G120C
+        self.thread_3 = QThread()  # G120X
+        # 实例化线程类
+        self.toWorkThread_1 = WorkThread_1()
+        self.toWorkThread_2 = WorkThread_2()
+        self.toWorkThread_3 = WorkThread_3()
+        # moveToThread方法把实例化线程移到Thread管理
+        self.toWorkThread_1.moveToThread(self.thread_1)
+        self.toWorkThread_2.moveToThread(self.thread_2)
+        self.toWorkThread_3.moveToThread(self.thread_3)
+        # 接收子线程信号发来的数据
+        self.toWorkThread_1.toMainMessage_1.connect(self.acceptThreadMessage)
+        self.toWorkThread_2.toMainMessage_2.connect(self.acceptThreadMessage)
+        self.toWorkThread_3.toMainMessage_3.connect(self.acceptThreadMessage)
+        self.toWorkThread_1.flagFinish_1.connect(self.onThreadFinish)
+        self.toWorkThread_2.flagFinish_2.connect(self.onThreadFinish)
+        self.toWorkThread_3.flagFinish_3.connect(self.onThreadFinish)
+        # 发送数据到子线程
+        self.toWorkThread_1.fromMainMessage_1.connect(
+            self.toWorkThread_1.processWork)
+        self.toWorkThread_2.fromMainMessage_2.connect(
+            self.toWorkThread_2.processWork)
+        self.toWorkThread_3.fromMainMessage_3.connect(
+            self.toWorkThread_3.processWork)
+        # 线程执行完成关闭线程
+        self.thread_1.finished.connect(self.threadStop)
+        self.thread_2.finished.connect(self.threadStop)
+        self.thread_3.finished.connect(self.threadStop)
+    def connectFunction(self):
+        # self.pushButton.clicked.connect(self.show_txt)
+        self.actionloadProfileS120.triggered.connect(
+            self.load_profile_S120_FUNCTION)
+        self.actionloadProfileG120C.triggered.connect(
+            self.load_profile_G120C_FUNCTION)
+        self.actionloadProfileG120X.triggered.connect(
+            self.load_profile_G120X_FUNCTION)
+        self.pushButton.clicked.connect(self.search_key_words_FUNCTION)
+        self.pushButton.clicked.connect(self.history_storage)
+        self.lineEdit.returnPressed.connect(self.search_key_words_FUNCTION)
+        self.lineEdit.returnPressed.connect(self.history_storage)
+        self.lineEdit.textChanged.connect(self.auto_capitalize_FUNCTION)
+        self.comboBox.currentIndexChanged[int].connect(
+            self.choose_errInfo_repository_FUNCTION)
+        self.listWidget.doubleClicked.connect(self.history_show)
+        self.actionEXIT.triggered.connect(QCoreApplication.quit)
+        self.actionClearHistory.triggered.connect(self.history_clear_FUNCTION)
+        self.actionHistoryNumber.triggered.connect(
+            self.history_maxNumber_storage_FUNCTION)
+        self.actionFontSize.triggered.connect(self.font_size_FUNCTION)
+        self.actionopenHistory.triggered.connect(
+            self.show_history_dockwidget_FUNCTION)
+        # listwigiet右键菜单
+        self.listWidget.customContextMenuRequested.connect(
+            self.listWidget_right_menu_FUNCTION)
+        # 重启
+        self.actionRestart.triggered.connect(self.restart_FUNCTION)
+        self.restarted.connect(MainWindow.onRestart)
+        # 启动虚拟键盘
+        self.actionOpenKeyboard.triggered.connect(self.onOpenKeyboard_FUNCTION)
+        # 关于
+        self.actionAboutQT.triggered.connect(self.aboutQT_FUNCTION)
+    def checkConfigurationFile(self, faltDictionary):
+        folder_name = os.path.join(self.baseDir, "TXT")
+        if os.path.exists(folder_name):
+            # print("文件夹存在")
+            # for root, dirs, files in os.walk(folder_name):
+            #     for f in files:
+            #         print("相对路径：", os.path.relpath(os.path.join(root, f)))
+            #         print("绝对路径：", os.path.abspath(os.path.join(root, f)))
+            for i in range(self.setFaltDictionaryNum):
+                if not os.path.exists(faltDictionary[i][0]):
+                    self.textEdit.append('{}配置文件缺失，无法执行{}故障码搜索功能。'.format(
+                        faltDictionary[i][1], faltDictionary[i][1]))
+                    self.comboBox.setItemData(
+                        i, Qt.NoItemFlags, Qt.UserRole - 1)
+                    self.flagLoadTXT[i] = False
+                else:
+                    self.flagLoadTXT[i] = True
+        if self.flagLoadTXT[0] == False and self.flagLoadTXT[1] == False and self.flagLoadTXT[2] == False:
+            self.comboBox.setDisabled(True)
+            self.pushButton.setDisabled(True)
+            self.flagSysERR = True
+        if os.path.exists(folder_name) ==False:
+            self.comboBox.setDisabled(True)
+            self.pushButton.setDisabled(True)
+            self.flagSysERR = True
+    def chooseDefaltDictionary(self):
+        if self.flagSysERR == False:
+            defaultFile_Index = [i for i, x in enumerate(
+                self.flagLoadTXT) if x is True]  # 查询列表中TRUE的索引值
+            self.currentDictionaryPath = self.faultDictionary[defaultFile_Index[0]][0]
+            self.currentDict = self.faultDictionary[defaultFile_Index[0]][1]
+            self.comboBox.setCurrentIndex(defaultFile_Index[0])
+        pass
+    def choose_errInfo_repository_FUNCTION(self):
+        self.allFalureCodeS120 = getAllFalureCodeG120C()
+        self.allFalureCodeG120X = getAllFalureCodeG120X()
+        self.allFalureCodeG120C = getAllFalureCodeS120()
+        self.completer_G120C = QCompleter(self.allFalureCodeS120)
+        self.completer_G120X = QCompleter(self.allFalureCodeG120X)
+        self.completer_S120 = QCompleter(self.allFalureCodeG120C)
+        # 设置匹配模式  有三种： Qt.MatchStartsWith 开头匹配（默认）  Qt.MatchContains 内容匹配  Qt.MatchEndsWith 结尾匹配
+        self.completer_G120C.setFilterMode(Qt.MatchContains)
+        self.completer_G120X.setFilterMode(Qt.MatchContains)
+        self.completer_S120.setFilterMode(Qt.MatchContains)
+        # 设置补全模式  有三种： QCompleter.PopupCompletion（默认）  QCompleter.InlineCompletion   QCompleter.UnfilteredPopupCompletion
+        self.completer_G120C.setCompletionMode(QCompleter.PopupCompletion)
+        self.completer_G120X.setCompletionMode(QCompleter.PopupCompletion)
+        self.completer_S120.setCompletionMode(QCompleter.PopupCompletion)
+        # 区分大小写的另一种方式
+        # self.completer_S120.setCaseSensitivity(Qt.CaseInsensitive)
+        self.lineEdit.setCompleter(self.completer_S120)
+        if self.comboBox.currentIndex() == 0:
+            self.currentDict = 'S120'
+            self.textEdit.append('已加载 S120 故障信息库')
+            self.currentDictionaryPath = self.faultDictionary[0][0]
+            self.currentAllFalure = self.allFalureCodeS120
+            self.currentCompleter = self.completer_S120
+            self.lineEdit.setCompleter(self.completer_S120)
+            self.label.clear()
+        elif self.comboBox.currentIndex() == 1:
+            self.currentDict = 'G120C'
+            self.textEdit.append('已加载 G120C 故障信息库')
+            self.currentDictionaryPath = self.faultDictionary[1][0]
+            self.currentAllFalure = self.allFalureCodeG120C
+            self.currentCompleter = self.completer_G120C
+            self.lineEdit.setCompleter(self.completer_G120C)
+            self.label.clear()
+        elif self.comboBox.currentIndex() == 2:
+            self.currentDict = 'G120X'
+            self.textEdit.append('已加载 G120X 故障信息库')
+            self.currentDictionaryPath = self.faultDictionary[2][0]
+            self.currentAllFalure = self.allFalureCodeG120X
+            self.currentCompleter = self.completer_G120X
+            self.lineEdit.setCompleter(self.completer_G120X)
+            self.label.clear()
+        # elif self.comboBox.currentIndex() == 3:
+        #     self.currentDict = 'HAHA'
+        #     self.textEdit.append('已加载 HAHA 故障信息库')
+        #     self.defaultDictionaryPath = './TXT/G120X_failure_code_list.txt'
+    def auto_capitalize_FUNCTION(self, txt):
+        # 输入自动改为大写
+        upp_text = txt.upper()
+        self.lineEdit.setText(upp_text)
+        return
+    def load_profile_S120_FUNCTION(self):
+        self.filePathPDF, fileTypePDF = QFileDialog.getOpenFileName(
+            self, "选择S120故障手册文件", ".", "PDF Files (*.pdf)")
+        # 当前线程id
+        print('main id', QThread.currentThread())
+        # 启动线程
+        self.toWorkThread_1.fromMainMessage_1.emit(self.filePathPDF)
+        if not self.thread_1.isRunning():
+            if os.path.exists(self.filePathPDF):
+                self.thread_1.start()
+                self.actionloadProfileS120.setEnabled(False)
+                self.textEdit.append('正在执行: S120文档扫描')
+            else:
+                self.textEdit.append('文件路径不存在。')
+        else:
+            self.textEdit.append('功能正在运行')
+        return
+    def load_profile_G120C_FUNCTION(self):
+        self.filePathPDF, fileTypePDF = QFileDialog.getOpenFileName(
+            self, "选择G120C故障手册文件", ".", "PDF Files (*.pdf)")
+        # 当前线程id
+        print('main id', QThread.currentThread())
+        # 启动线程
+        self.toWorkThread_2.fromMainMessage_2.emit(self.filePathPDF)
+        if not self.thread_2.isRunning():
+            if os.path.exists(self.filePathPDF):
+                self.thread_2.start()
+                self.actionloadProfileG120C.setEnabled(False)
+                self.textEdit.append('正在执行: G120C文档扫描')
+            else:
+                self.textEdit.append('文件路径不存在。')
+        else:
+            self.textEdit.append('功能正在运行')
+        return
+    def load_profile_G120X_FUNCTION(self):
+        self.filePathPDF, fileTypePDF = QFileDialog.getOpenFileName(
+            self, "选择G120X故障手册文件", ".", "PDF Files (*.pdf)")
+        # 当前线程id
+        print('main id', QThread.currentThread())
+        # 启动线程
+        self.toWorkThread_3.fromMainMessage_3.emit(self.filePathPDF)
+        if not self.thread_3.isRunning():
+            if os.path.exists(self.filePathPDF):
+                self.thread_3.start()
+                self.actionloadProfileG120X.setEnabled(False)
+                self.textEdit.append('正在执行: G120X文档扫描')
+            else:
+                self.textEdit.append('文件路径不存在。')
+        else:
+            self.textEdit.append('功能正在运行')
+        return
+    def history_maxNumber_storage_FUNCTION(self):
+        num, ok = QInputDialog.getInt(
+            self, '历史存储数量', '输入数字(1~20)', value=5, min=1, max=20)
+        if ok:
+            self.maximum_storage_history = num
+            if len(self.errCodeList) > self.maximum_storage_history:
+                self.errCodeList = self.errCodeList[0:self.maximum_storage_history]
+                self.listWidget.clear()
+                self.listWidget.addItems(self.errCodeList)
+        self.textEdit.append(
+            '设置最大历史信息存储数量为：'+str(self.maximum_storage_history))
+        return
+    def font_size_FUNCTION(self):
+        num, ok = QInputDialog.getInt(
+            self, '字体大小设置', '输入数字(12~34)', value=self.label_pix, min=8, max=30, step=2)
+        self.label_pix = num
+        label_pix = 'font-size:' + str(self.label_pix) + 'px;'
+        self.label.setStyleSheet(label_pix)
+        self.update()
+        self.textEdit.append('设置显示字体大小为：'+str(self.label_pix) + 'px')
+        return
+    def history_clear_FUNCTION(self):
+        self.errCodeList = []
+        self.listWidget.clear()
+        return
+    def search_key_words_FUNCTION(self):
+        code = self.lineEdit.text()
+        if len(code) == 6:
+            errCode = self.lineEdit.text()
+        else:
+            errCode = self.currentCompleter.currentCompletion()
+        self.lineEdit.setText(errCode)
+        message, self.flagBit = self.search_key_words(
+            self.currentDictionaryPath, errCode, self.currentDict)
+        self.label.setText(message)
+        return
+    def show_history_dockwidget_FUNCTION(self):
+        self.dockWidget_History.show()
+    def search_key_words(self, errDictionaryPath, errCode, switchDict):
+        if switchDict == 'S120':
+            message, flagBit = s120_getFailureInformation(
+                errDictionaryPath, errCode)
+        elif switchDict == 'G120C':
+            message, flagBit = g120c_getFailureInformation(
+                errDictionaryPath, errCode)
+        elif switchDict == 'G120X':
+            message, flagBit = g120x_getFailureInformation(
+                errDictionaryPath, errCode)
+        return message, flagBit
+    def wheelEvent(self, event):
+        angle = event.angleDelta() / 8  # 返回QPoint对象，为滚轮转过的数值，单位为1/8度
+        angleY = angle.y()
+        # 获取当前鼠标相对于view的位置
+        if self.ctrlPressed == True and self.label.underMouse():
+            if angleY > 0:
+                self.label_pix += 2
+                if self.label_pix >= 24:
+                    self.label_pix = 24
+            else:  # 滚轮下滚
+                self.label_pix -= 2
+                if self.label_pix <= 16:
+                    self.label_pix = 16
+            label_pix = 'font-size:' + str(self.label_pix) + 'px;'
+            self.label.setStyleSheet(label_pix)
+            # self.adjustSize()
+            self.update()
+    def keyReleaseEvent(self, QKeyEvent):
+        if QKeyEvent.key() == Qt.Key_Control:
+            self.ctrlPressed = False
+        return super().keyReleaseEvent(QKeyEvent)
+    def keyPressEvent(self, QKeyEvent):
+        if QKeyEvent.key() == Qt.Key_Control:
+            self.ctrlPressed = True
+        return super().keyPressEvent(QKeyEvent)
+    def history_storage(self):
+        if self.flagBit == True:
+            errCode = self.lineEdit.text()
+            indexFaultictionary = self.comboBox.currentIndex()
+            if indexFaultictionary == 0:
+                faultDictionaryHistory = 'S120'
+            elif indexFaultictionary == 1:
+                faultDictionaryHistory = 'G120C'
+            elif indexFaultictionary == 2:
+                faultDictionaryHistory = 'G120X'
+            faultHistoryInformation = faultDictionaryHistory + '-' + errCode
+            if len(self.errCodeList) < self.maximum_storage_history:
+                if faultHistoryInformation not in self.errCodeList:
+                    self.errCodeList.insert(0, faultHistoryInformation)
+            else:
+                if faultHistoryInformation not in self.errCodeList:
+                    self.errCodeList.insert(0, faultHistoryInformation)
+                    self.errCodeList.pop()
+            self.listWidget.clear()
+            self.listWidget.addItems(self.errCodeList)
+        elif self.flagBit == False:
+            return
+    def history_show(self):
+        a_item = self.listWidget.selectedItems()[0]  # 获取选择的item
+        index = self.listWidget.indexFromItem(a_item)  # 通过item获取选择的索引号
+        message = self.errCodeList[index.row()]
+        switchDict = message.split('-', 1)[0]
+        errCode = message.split('-', 1)[1]
+        if switchDict == 'S120':
+            errDictionary = './TXT/S120_failure_code_list.txt'
+        elif switchDict == 'G120C':
+            errDictionary = './TXT/G120C_failure_code_list.txt'
+        elif switchDict == 'G120X':
+            errDictionary = './TXT/G120X_failure_code_list.txt'
+        message = self.search_key_words(errDictionary, errCode, switchDict)
+        self.label.setText(message[0])
+        return
+    def listWidget_right_menu_FUNCTION(self, pos):
+        menu = QtWidgets.QMenu()
+        opt1 = menu.addAction("删除条目")
+        opt2 = menu.addAction("清空历史记录")
+        hitIndex = self.listWidget.indexAt(pos).column()
+        if hitIndex > -1:
+            # 获取item内容
+            # name=self.listWidget.item(hitIndex).text()
+            action = menu.exec_(self.listWidget.mapToGlobal(pos))
+            if action == opt1:
+                self.errCodeList.pop(hitIndex)
+                self.listWidget.clear()
+                self.listWidget.addItems(self.errCodeList)
+            elif action == opt2:
+                self.errCodeList.clear()
+                self.listWidget.clear()
+                self.listWidget.addItems(self.errCodeList)
+                return
+    def statusShowTime(self):
+        '''显示当前时间'''
+        self.timer = QTimer()
+        self.timeLabel = QLabel()
+        self.statusBar.addPermanentWidget(self.timeLabel, 1)
+        self.timer.timeout.connect(lambda: self.showCurrentTime(
+            self.timeLabel))
+        self.timer.start(500)
+        self.info = QLabel()
+        self.info.setText('-Code by RIAMB-')
+        self.statusBar.addPermanentWidget(self.info, 0)
+    def showCurrentTime(self, timeLabel):
+        '''获取当前时间'''
+        # import time
+        # time.sleep(5)
+        currentTime = QDateTime.currentDateTime()
+        self.timeDisplay = currentTime.toString('yyyy-MM-dd hh:mm:ss dddd')
+        timeLabel.setText(self.timeDisplay)
+    def restart_FUNCTION(self):
+        if QMessageBox.question(self, "提示", "确认要重启软件吗?") == QMessageBox.Yes:
+            self.hide()
+            # 软件底部日期显示重置
+            self.restarted.emit(self, 'restart')
+            self.timeLabel = QLabel()
+            self.info = QLabel()
+        return
+    @classmethod  # 使用classmethod重载功能
+    def onRestart(cls, widget, restart):
+        w = MainWindow(restart)
+        w.show()
+        widget.close()
+        widget.deleteLater()
+        del widget
+    def onOpenKeyboard_FUNCTION(self):
+        import glob
+        kernelType = QSysInfo.kernelType()
+        if kernelType == 'winnt':
+            try:
+                path = glob.glob(
+                    r'C:\Windows\WinSxS\amd64_microsoft-windows-osk_*\osk.exe')[0]
+                ret = QProcess.startDetached(path)
+                self.textEdit.append('虚拟键盘调用成功。')
+            except Exception as e:
+                self.textEdit.append('调用错误，错误信息: %s' % e)
+            # try:
+            #     # 32位程序调用64位操作系统下的程序会被重定向到SysWOW64目录
+            #     # 可通过`Wow64DisableWow64FsRedirection`和`Wow64RevertWow64FsRedirection`控制
+            #     ret.QProcess.startDetached(r'C:\Windows\system32\osk.exe')
+            #     self.textEdit.append('start 32 osk: %s' % ret)
+            # except Exception as e:
+            #     self.textEdit.append('start osk error: %s' % e)
+        elif kernelType == 'darwin':
+            self.textEdit.append('该系统无法使用此功能')
+            pass
+        elif kernelType == 'linux':
+            self.textEdit.append('该系统无法使用此功能')
+            pass
+    def acceptThreadMessage(self, receiveMessageFromChild):
+        self.resultFromChildThreadPDF = receiveMessageFromChild
+    def onThreadFinish(self, flagFinish):
+        if flagFinish == 'finish_T1' and self.thread_1.isRunning():
+            self.thread_1.requestInterruption()
+            self.thread_1.quit()
+            self.thread_1.wait()
+        elif flagFinish == 'finish_T2' and self.thread_2.isRunning():
+            self.thread_2.requestInterruption()
+            self.thread_2.quit()
+            self.thread_2.wait()
+        elif flagFinish == 'finish_T3' and self.thread_3.isRunning():
+            self.thread_3.requestInterruption()
+            self.thread_3.quit()
+            self.thread_3.wait()
+    def threadStop(self):
+        '''退出线程'''
+        if self.thread_1.isRunning() == False and self.actionloadProfileS120.isEnabled() == False:
+            self.actionloadProfileS120.setEnabled(True)
+        elif self.thread_2.isRunning() == False and self.actionloadProfileG120C.isEnabled() == False:
+            self.actionloadProfileG120C.setEnabled(True)
+        elif self.thread_3.isRunning() == False and self.actionloadProfileG120X.isEnabled() == False:
+            self.actionloadProfileG120X.setEnabled(True)
+        self.textEdit.append(self.resultFromChildThreadPDF)
+    def aboutQT_FUNCTION(self):
+        QMessageBox.aboutQt(self, 'QT')
+    def TEST(self):
+        self.textEdit.append('test message ~')
+        return
+if __name__ == '__main__':
+    QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    app = QApplication(sys.argv)
+    myWin = MainWindow()
+    myWin.show()
+    sys.exit(app.exec_())
+read.py
+ 
+ 
+# coding:utf-8
+import os
+ 
+#指定文件夹
+folder_name =r"D:\VS2019Project\PDF\著作权\code"
+ 
+#创建文件
+f = open(folder_name+"\output.txt",'w+')
+ 
+#遍历文件夹下所有.py文件
+for root, dirs, files in os.walk(folder_name):
+    for file in files:
+        if os.path.splitext(file)[1] == '.py':
+            with open(os.path.join(root, file),'r',encoding='utf-8') as f1:
+                f.write(file+'\n')
+                f.write(f1.read())
+                # f.write('\n\n')
+ 
+#关闭文件
+f.close()S120ScanPDF.py
+import pdfplumber
+import pandas as pd
+import os
+def s120_scan_PDF_function(pdfPath):
+    '''PDF扫描'''
+    ##依次扫描PDF页面并串联文本
+    if os.path.isfile(pdfPath) == False:
+        return '没有选择文件!'
+    base_name = os.path.basename(pdfPath)
+    file_name = os.path.splitext(base_name)
+    pageText = ''
+    with pdfplumber.open(pdfPath) as pdf:
+        for n in range(len(pdf.pages)):
+            singlePage = pdf.pages[n]
+            singlePageText = singlePage.extract_text()
+            pageText = pageText + singlePageText
+    ##完整文本转存TXT格式
+    txtPath = './TXT/'+file_name[0]+'.txt'
+    with open(txtPath, 'w', encoding = 'utf-8') as c:
+        c.write(pageText)
+        c.close()
+    if os.path.isfile(txtPath) == False:
+        return 'txt文件生成失败!'
+    else:
+        pdf_to_txt_result = 'txt文件生成完成! '+'保存在 '+ file_name[0]+'.txt 中。\n'
+    ## 获取每行的信息和内容
+    with open(txtPath, 'r', encoding = 'utf-8') as f:
+        allLine = f.readlines()
+        f.close()
+    allLineNumber = len(allLine)
+    ## 剔除不需要的信息行   
+    with open(txtPath,"w",encoding="utf-8") as f_w:
+        for line in allLine:
+            if "故障和报警" in line:
+                continue
+            if "SINAMICS S120/S150" in line:
+                continue
+            if "参数手册," in line:
+                continue
+            f_w.write(line)
+    ## 刷新每行的信息和内容
+    with open(txtPath, 'r', encoding = 'utf-8') as f:
+        allLine = f.readlines()
+        f.close()
+    allLineNumber = len(allLine)
+    ## 筛选分类文本信息
+    failure = {}                #故障码和名称
+    failureNumber = 0
+    failureLocation = {}
+    informationValue = {}           #信息值
+    informationValueNumber = 0
+    informationValueLocation = {}
+    informationCatefory = {}        #信息类别
+    informationCateforyNumber = 0
+    informationCateforyLocation = {}
+    drivingObject = {}
+    drivingObjectNumber = 0         #驱动对象数量
+    drivingObjectLocation = {}    #驱动对象所在首行
+    component = {}
+    componentNumber = 0             #组件数量 
+    componentLocation = {}        #组件所在行
+    reason = {}
+    reasonNumber = 0                #原因数量
+    reasonLocation = {}           #原因所在首行
+    processing = {}
+    processingNumber = 0            #处理数量
+    processingLocation = {}       #处理所在首行
+    ########################
+    ###基于面向对象思想编写###
+    ########################
+    class Foo:
+        def __init__(self, search, name, number, lineNumber):
+            self.search = search
+            self.name = name
+            self.number = number
+            self.lineNumber = lineNumber
+        def searchError(self):                              #检索故障码
+            global countNumber
+            countNumber = 0
+            for x in range(allLineNumber):    
+                if self.search in allLine[x]:
+                    self.name[self.number] = allLine[x - 1]
+                    self.lineNumber[self.number] = x - 1
+                    self.number = self.number + 1 
+                    countNumber = self.number   
+        def searchInformation(self):                        #检索信息值和信息类别
+            global countNumber
+            countNumber = 0
+            for x in range(allLineNumber):
+                if self.search in allLine[x]:
+                    self.name[self.number] = allLine[x]
+                    self.lineNumber[self.number] = x
+                    self.number = self.number + 1
+                    countNumber = self.number
+        def searchInformation1(self):                        #检索其他需求信息
+            global countNumber
+            countNumber = 0
+            for x in range(allLineNumber):
+                if self.search in allLine[x]:
+                    self.lineNumber[self.number] = x
+                    self.number = self.number + 1
+                    countNumber = self.number
+    Failure = Foo('信息值： ', failure, failureNumber, failureLocation)
+    Failure.searchError()
+    failureNumber = countNumber
+    #print(failureNumber)
+    InformationValue = Foo('信息值： ', informationValue, informationValueNumber, informationValueLocation)
+    InformationValue.searchInformation()
+    informationValueNumber = countNumber
+    # print(informationValueNumber)
+    InformationCatefory = Foo('信息类别： ', informationCatefory, informationCateforyNumber, informationCateforyLocation)
+    InformationCatefory.searchInformation()
+    informationCateforyNumber = countNumber
+    #print(informationCateforyNumber)
+    DrivingObject = Foo("驱动对象： ", drivingObject, drivingObjectNumber, drivingObjectLocation)
+    DrivingObject.searchInformation1()
+    drivingObjectNumber = countNumber
+    # print(drivingObjectNumber)
+    Component = Foo('组件： ', component, componentNumber, componentLocation)
+    Component.searchInformation()
+    componentNumber = countNumber
+    # print(componentNumber)
+    Reason = Foo('原因： ', reason, reasonNumber,reasonLocation)
+    Reason.searchInformation1()
+    reasonNumber = countNumber
+    Processing = Foo('处理： ', processing, processingNumber, processingLocation)
+    Processing.searchInformation1()
+    processingNumber = countNumber
+    ##提取驱动对象和组件
+    if drivingObjectNumber != componentNumber:
+        print("信息提取有误！")
+        print(drivingObjectNumber)
+        print(componentNumber)
+    else:
+        for x in range(drivingObjectNumber):
+            ##提取组件
+            component[x] = allLine[componentLocation[x]]
+            ##提取驱动对象
+            if drivingObjectLocation[x] == componentLocation[x] - 1:    #如果驱动对象只有一行
+                drivingObject[x] = allLine[drivingObjectLocation[x]]
+            else:
+                dataDrivingObject = ''                                                           #如果驱动对象有多行
+                lineRange = componentLocation[x] - drivingObjectLocation[x]
+                for y in range(lineRange):    
+                    lineNumber = drivingObjectLocation[x] + y
+                    dataDrivingObject = dataDrivingObject + allLine[lineNumber]
+                    drivingObject[x] = dataDrivingObject
+    ##提取原因和处理
+    if reasonNumber != processingNumber:
+        print("信息提取有误！")
+        print(reasonNumber)
+        print(processingNumber)
+    elif reasonNumber != failureNumber:
+        print("信息提取有误！")
+    else:
+        for x in range(reasonNumber):
+            ##提取原因
+            if reasonLocation[x] == processingLocation[x] - 1:          #如果原因只有一行
+                reason[x] = allLine[reasonLocation[x]]
+            else:
+                dataReason = ''                                                           #如果原因有多行
+                lineRange = processingLocation[x] - reasonLocation[x]
+                for y in range(lineRange):
+                    lineNumber = reasonLocation[x] + y
+                    dataReason = dataReason + allLine[lineNumber]
+                    reason[x] = dataReason
+            ##提取处理
+            if x != processingNumber - 1:                                           #如果处理的不是最后一条
+                if processingLocation[x] == failureLocation[x + 1] - 1:     #如果处理只有一行
+                    processing[x] = allLine[processingLocation[x]]
+                else: 
+                    dataProcess = ''                                                              #如果处理有多行
+                    lineRange = failureLocation[x + 1] - processingLocation[x]
+                    for y in range(lineRange):
+                        lineNumber = processingLocation[x] + y
+                        dataProcess = dataProcess + allLine[lineNumber]
+                        processing[x] = dataProcess
+            else:
+                dataProcess = ''
+                lineRange = allLineNumber - processingLocation[x]
+                for y in range(lineRange):   
+                    lineNumber = processingLocation[x] + y
+                    dataProcess = dataProcess + allLine[lineNumber]
+                    processing[x] = dataProcess
+    excelPath = './EXCEL/'+file_name[0]+'.xlsx'
+    if failureNumber == informationCateforyNumber:
+        CreateExcel(failure, informationValue, informationCatefory, drivingObject, component, reason, processing, excelPath)
+    if os.path.isfile(excelPath) == False:
+        txt_to_excel_result = '文件生成失败! 请选择S120故障手册文件!'
+        txtDocument = './TXT'
+        txtName = file_name[0]+'.txt'
+        os.remove(os.path.join(txtDocument, txtName))
+        return txt_to_excel_result
+    else:
+        txt_to_excel_result = pdf_to_txt_result + 'Excel文件生成完成! '+'保存在 '+ file_name[0]+'.xlsx 中。'
+    result = txt_to_excel_result
+    return result
+def CreateExcel(information1, information2, information3, information4, information5, information6, information7, path):
+    data = {'故障名称':information1, '信息值':information2, '信息类别':information3, '驱动对象':information4, '组件':information5, '原因':information6, '处理':information7}
+    df = pd.DataFrame(data)
+    df.to_excel(path) 
+# if __name__ == '__main__':
+#     a = s120_scan_PDF_function('./PDF/S120_failure_code_list.pdf')
+#     print(a)S120SearchKeyWords.py
+import os
+def get_all_lines(txtPath = './TXT/S120_failure_Code_list.txt'):
+    ## 获取每行的信息和内容
+    if  os.path.exists('./TXT/S120_failure_code_list.txt') :
+        with open(txtPath, 'r', encoding = 'utf-8') as f:
+            allLine = f.readlines()
+            f.close()
+        allLineNumber = len(allLine)
+        # print(allLineNumber)
+        ## 剔除不需要的信息行
+        with open(txtPath,"w",encoding="utf-8") as f_w:
+            for line in allLine:
+                if "故障和报警" in line:
+                    continue
+                if "SINAMICS S120/S150" in line:
+                    continue
+                if "参数手册," in line:
+                    continue
+                f_w.write(line)
+        ## 刷新每行的信息和内容
+        with open(txtPath, 'r', encoding = 'utf-8') as f:
+            allLine = f.readlines()
+            f.close()
+        allLineNumber = len(allLine)
+        # print(allLineNumber)
+    else:
+        allLine = []
+        allLineNumber=[]
+    return allLine,allLineNumber
+def data_process(allLine, allLineNumber, dataClass):
+    ## 筛选分类文本信息
+    failure = {}                #故障码和名称
+    failureNumber = 0
+    failureLocation = {}
+    informationValue = {}           #信息值
+    informationValueNumber = 0
+    informationValueLocation = {}
+    informationCatefory = {}        #信息类别
+    informationCateforyNumber = 0
+    informationCateforyLocation = {}
+    drivingObject = {}
+    drivingObjectNumber = 0         #驱动对象数量
+    drivingObjectLocation = {}    #驱动对象所在首行
+    component = {}
+    componentNumber = 0             #组件数量 
+    componentLocation = {}        #组件所在行
+    reason = {}
+    reasonNumber = 0                #原因数量
+    reasonLocation = {}           #原因所在首行
+    processing = {}
+    processingNumber = 0            #处理数量
+    processingLocation = {}       #处理所在首行
+    #####################
+    ###基于常规方法编写###
+    #####################
+    for x in range(allLineNumber):
+        if "信息值： " in allLine[x]:
+            # print(allLine[i])
+            failure[failureNumber] = allLine[x - 1]                 #故障码和名称
+            informationValue[failureNumber] = allLine[x]            #信息值
+            informationCatefory[failureNumber] = allLine[x + 1]     #信息类别
+            failureLocation[failureNumber] = x - 1                  #故障码所在行
+            informationValueLocation[informationValueNumber] = x
+            informationCateforyLocation[informationCateforyNumber] = x + 1
+            failureNumber = failureNumber + 1
+            informationValueNumber = informationValueNumber + 1
+            informationCateforyNumber = informationCateforyNumber + 1
+        if "驱动对象： " in allLine[x]:
+            drivingObjectLocation[drivingObjectNumber] = x
+            drivingObjectNumber = drivingObjectNumber + 1
+        if "组件： " in allLine[x]:
+            componentLocation[componentNumber] = x
+            componentNumber = componentNumber + 1
+        if "原因： " in  allLine[x]:
+            reasonLocation[reasonNumber] = x
+            reasonNumber = reasonNumber + 1
+        if "处理： " in allLine[x]:
+            processingLocation[processingNumber] = x
+            processingNumber = processingNumber + 1
+    ##提取驱动对象和组件
+    if drivingObjectNumber != componentNumber:
+        print("信息提取有误！03")
+        print(drivingObjectNumber)
+        print(componentNumber)
+    else:
+        for x in range(drivingObjectNumber):
+            ##提取组件
+            component[x] = allLine[componentLocation[x]]
+            ##提取驱动对象
+            if drivingObjectLocation[x] == componentLocation[x] - 1:        #如果驱动对象只有一行
+                drivingObject[x] = allLine[drivingObjectLocation[x]]
+            else:
+                dataDrivingObject = ''                                      #如果驱动对象有多行
+                lineRange = componentLocation[x] - drivingObjectLocation[x]
+                for y in range(lineRange): 
+                    if y == 0:   
+                        lineNumber = drivingObjectLocation[x] + y
+                        dataDrivingObject = dataDrivingObject + allLine[lineNumber]
+                        drivingObject[x] = dataDrivingObject
+                    else:
+                        lineNumber = drivingObjectLocation[x] + y
+                        dataDrivingObject = dataDrivingObject + '\t' + '\t' + allLine[lineNumber]
+                        drivingObject[x] = dataDrivingObject
+    ##提取原因和处理
+    if reasonNumber != processingNumber:
+        print("信息提取有误！01")
+        print(reasonNumber)
+        print(processingNumber)
+    elif reasonNumber != failureNumber:
+        print("信息提取有误！02")
+    else:
+        for x in range(reasonNumber):
+            ##提取原因
+            if reasonLocation[x] == processingLocation[x] - 1:              #如果原因只有一行
+                reason[x] = allLine[reasonLocation[x]]
+            else:
+                dataReason = ''                                             #如果原因有多行
+                lineRange = processingLocation[x] - reasonLocation[x]
+                for y in range(lineRange):
+                    if y == 0:
+                        lineNumber = reasonLocation[x] + y
+                        dataReason = dataReason + allLine[lineNumber]
+                        reason[x] = dataReason
+                    else:
+                        lineNumber = reasonLocation[x] + y
+                        dataReason = dataReason + '\t' + '\t' + allLine[lineNumber]
+                        reason[x] = dataReason
+            ##提取处理
+            if x != processingNumber - 1:                                   #如果处理的不是最后一条
+                if processingLocation[x] == failureLocation[x + 1] - 1:     #如果处理只有一行
+                    processing[x] = allLine[processingLocation[x]]
+                else: 
+                    dataProcess = ''                                        #如果处理有多行
+                    lineRange = failureLocation[x + 1] - processingLocation[x]
+                    for y in range(lineRange):
+                        if y == 0:
+                            lineNumber = processingLocation[x] + y
+                            dataProcess = dataProcess + allLine[lineNumber]
+                            processing[x] = dataProcess
+                        else:
+                            lineNumber = processingLocation[x] + y
+                            dataProcess = dataProcess + '\t' + '\t' + allLine[lineNumber]
+                            processing[x] = dataProcess
+            else:
+                dataProcess = ''
+                lineRange = allLineNumber - processingLocation[x]
+                for y in range(lineRange):   
+                    if y == 0:
+                        lineNumber = processingLocation[x] + y
+                        dataProcess = dataProcess + allLine[lineNumber]
+                        processing[x] = dataProcess
+                    else:
+                        lineNumber = processingLocation[x] + y
+                        dataProcess = dataProcess + '\t' + '\t' + allLine[lineNumber]
+                        processing[x] = dataProcess
+    # if dataClass == 'failure':
+    #     return failure, failureNumber,failureLocation
+    # elif dataClass == 'informationValue':
+    #     return informationValue, informationValueNumber, informationValueLocation
+    # elif dataClass == 'informationCatefory':
+    #     return informationCatefory, informationCateforyNumber, informationCateforyLocation
+    # elif dataClass == 'drivingObject':
+    #     return drivingObject, drivingObjectNumber, drivingObjectLocation
+    # elif dataClass == 'component':
+    #     return component, componentNumber, componentLocation
+    # elif dataClass == 'reason':
+    #     return reason, reasonNumber, reasonLocation
+    # elif dataClass == 'processing':
+    #     return processing, processingNumber, processingLocation
+    if dataClass == 'failure':
+        return failure, failureNumber
+    elif dataClass == 'informationValue':
+        return informationValue, informationValueNumber
+    elif dataClass == 'informationCatefory':
+        return informationCatefory, informationCateforyNumber
+    elif dataClass == 'drivingObject':
+        return drivingObject, drivingObjectNumber
+    elif dataClass == 'component':
+        return component, componentNumber
+    elif dataClass == 'reason':
+        return reason, reasonNumber
+    elif dataClass == 'processing':
+        return processing, processingNumber
+##切割名称和内容
+def cutMessage(inforamtion, number):
+    '''输入存有名称和内容的词典及总数'''
+    '''输出存有名称和内容的词典name和content'''
+    name = {}
+    content = {}
+    for n in range(number):
+        str = inforamtion[n]
+        str2 = str.split(' ', 1)
+        name[n] = str2[0]
+        content[n] = str2[1]
+    return name, content
+def formatting(name, content, number):
+    information = {}
+    for n in range(number):
+        result = name[n] + '\t' + '\t' + content[n]
+        information[n] = result
+    return information
+def formatting1(name, content, number):
+    information = {}
+    for n in range(number):
+        result = name[n] + '\t' + content[n]
+        information[n] = result
+    return information
+def s120_getFailureInformation(txtPath, targetCode = 'N01004'):
+    '''提取指定故障码的相关信息（提取单个故障码）,输入故障码词典、故障码数量、故障码所在行位置词典、要检索的故障码、输出被检索的故障码和相关信息'''
+    allLine, allLineNumber = get_all_lines(txtPath)
+    failure, failureNumber = data_process(allLine,allLineNumber,'failure')
+    code, name = cutMessage(failure, failureNumber)
+    failure = formatting(code, name, failureNumber)
+    informationValue, informationValueNumber = data_process(allLine,allLineNumber,'informationValue')
+    name, content = cutMessage(informationValue, informationValueNumber)
+    informationValue = formatting1(name, content, informationValueNumber) 
+    informationCatefory, informationCateforyNumber = data_process(allLine,allLineNumber,'informationCatefory')
+    name, content = cutMessage(informationCatefory, informationCateforyNumber)
+    informationCatefory = formatting1(name, content, informationCateforyNumber) 
+    drivingObject, drivingObjectNumber = data_process(allLine,allLineNumber,'drivingObject')
+    name, content = cutMessage(drivingObject, drivingObjectNumber)
+    drivingObject = formatting1(name, content, drivingObjectNumber)
+    component, componentNumber = data_process(allLine,allLineNumber,'component')
+    name, content = cutMessage(component, componentNumber)
+    component = formatting(name, content, componentNumber)
+    reason, reasonNumber = data_process(allLine,allLineNumber,'reason')
+    name, content = cutMessage(reason, reasonNumber)
+    reason = formatting(name, content, reasonNumber)
+    processing, processingNumber = data_process(allLine,allLineNumber,'processing')
+    name, content = cutMessage(processing, processingNumber)
+    processing = formatting(name, content, processingNumber)
+    missionComplete = False     #故障码查询结果标志位
+    targetNumber = {}
+    targetCount = 0
+    if len(targetCode) != 6:
+        missionComplete = False
+    else:   
+        for m in range(failureNumber):
+            if targetCode in code[m]:
+                targetNumber[targetCount] = m
+                missionComplete = True
+                targetCount = targetCount + 1           
+    flagBit = True
+    if missionComplete == True:
+        dataTargetDic = {}
+        for i in range(targetCount):
+            serialNumber = targetNumber[i]
+            dataTargetDic[i] = ''
+            dataTargetDic[i] = failure[serialNumber] + informationValue[serialNumber] + informationCatefory[serialNumber] + \
+                drivingObject[serialNumber] + component[serialNumber] + reason[serialNumber] + processing[serialNumber]
+        dataTarget = ''
+        for j in range(targetCount):
+            dataTarget = dataTarget + dataTargetDic[j]
+            if j != targetCount - 1:
+                dataTarget = dataTarget + '\n'
+        flagBit = True
+        return dataTarget,flagBit
+    else:
+        missionFailed = '您输入的故障码有误，请核验后再次输入！\n'
+        flagBit = False
+        return missionFailed,flagBit
+def getAllFalureCodeS120():
+    if os.path.exists('./TXT/S120_failure_code_list.txt') :
+        allLine, allLineNumber = get_all_lines('./TXT/S120_failure_code_list.txt')
+        failure, failureNumber = data_process(allLine,allLineNumber,'failure')
+        dict_code, name = cutMessage(failure, failureNumber)
+        list_code = list(dict_code.values())
+    else:
+        list_code = []
+    return list_code
+# if __name__ == '__main__':
+#     a = s120_getFailureInformation('./TXT/S120_failure_Code_list.txt', 'N0004')
+#     print(a[0])Ui_PDF.py
+Ui_PDF.py
+# -*- coding: utf-8 -*-
+# Form implementation generated from reading ui file 'd:\VS2019Project\PDF\Ui_PDF.ui'
+#
+# Created by: PyQt5 UI code generator 5.15.4
+#
+# WARNING: Any manual changes made to this file will be lost when pyuic5 is
+# run again.  Do not edit this file unless you know what you are doing.
+from PyQt5 import QtCore, QtGui, QtWidgets
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(902, 720)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("d:\\VS2019Project\\PDF\\../.designer/backup/RIAMB_LOGO.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        MainWindow.setWindowIcon(icon)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName("gridLayout")
+        self.widget = QtWidgets.QWidget(self.centralwidget)
+        self.widget.setMinimumSize(QtCore.QSize(0, 20))
+        self.widget.setObjectName("widget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.comboBox = QtWidgets.QComboBox(self.widget)
+        self.comboBox.setMinimumSize(QtCore.QSize(150, 0))
+        self.comboBox.setObjectName("comboBox")
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.horizontalLayout.addWidget(self.comboBox)
+        self.lineEdit = QtWidgets.QLineEdit(self.widget)
+        self.lineEdit.setMinimumSize(QtCore.QSize(150, 0))
+        self.lineEdit.setMaximumSize(QtCore.QSize(500, 16777215))
+        self.lineEdit.setMaxLength(6)
+        self.lineEdit.setCursorMoveStyle(QtCore.Qt.LogicalMoveStyle)
+        self.lineEdit.setObjectName("lineEdit")
+        self.horizontalLayout.addWidget(self.lineEdit)
+        self.pushButton = QtWidgets.QPushButton(self.widget)
+        self.pushButton.setMinimumSize(QtCore.QSize(200, 0))
+        self.pushButton.setObjectName("pushButton")
+        self.horizontalLayout.addWidget(self.pushButton)
+        self.gridLayout.addWidget(self.widget, 0, 0, 1, 2)
+        self.groupBox = QtWidgets.QGroupBox(self.centralwidget)
+        self.groupBox.setMinimumSize(QtCore.QSize(0, 80))
+        self.groupBox.setMaximumSize(QtCore.QSize(16777215, 120))
+        self.groupBox.setFlat(True)
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout_4 = QtWidgets.QGridLayout(self.groupBox)
+        self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_4.setSpacing(0)
+        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.textEdit = QtWidgets.QTextEdit(self.groupBox)
+        self.textEdit.setMinimumSize(QtCore.QSize(0, 0))
+        self.textEdit.setMaximumSize(QtCore.QSize(16777215, 100))
+        self.textEdit.setReadOnly(True)
+        self.textEdit.setObjectName("textEdit")
+        self.gridLayout_4.addWidget(self.textEdit, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.groupBox, 2, 0, 1, 2)
+        self.groupBox_2 = QtWidgets.QGroupBox(self.centralwidget)
+        self.groupBox_2.setFlat(False)
+        self.groupBox_2.setObjectName("groupBox_2")
+        self.gridLayout_5 = QtWidgets.QGridLayout(self.groupBox_2)
+        self.gridLayout_5.setContentsMargins(0, 5, 0, 0)
+        self.gridLayout_5.setHorizontalSpacing(0)
+        self.gridLayout_5.setObjectName("gridLayout_5")
+        self.scrollArea = QtWidgets.QScrollArea(self.groupBox_2)
+        self.scrollArea.setFrameShape(QtWidgets.QFrame.Box)
+        self.scrollArea.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.scrollArea.setLineWidth(2)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setObjectName("scrollArea")
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 596, 463))
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.label = QtWidgets.QLabel(self.scrollAreaWidgetContents)
+        self.label.setMinimumSize(QtCore.QSize(0, 0))
+        self.label.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.label.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.label.setText("")
+        self.label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
+        self.label.setObjectName("label")
+        self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
+        self.label_icon = QtWidgets.QLabel(self.scrollAreaWidgetContents)
+        self.label_icon.setMinimumSize(QtCore.QSize(0, 54))
+        self.label_icon.setMaximumSize(QtCore.QSize(16777215, 55))
+        self.label_icon.setText("")
+        self.label_icon.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing)
+        self.label_icon.setObjectName("label_icon")
+        self.gridLayout_2.addWidget(self.label_icon, 1, 0, 1, 1)
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.gridLayout_5.addWidget(self.scrollArea, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.groupBox_2, 1, 0, 1, 2)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 902, 23))
+        self.menubar.setObjectName("menubar")
+        self.menu = QtWidgets.QMenu(self.menubar)
+        self.menu.setObjectName("menu")
+        self.menu_2 = QtWidgets.QMenu(self.menubar)
+        self.menu_2.setObjectName("menu_2")
+        self.menu_3 = QtWidgets.QMenu(self.menubar)
+        self.menu_3.setObjectName("menu_3")
+        self.menu_5 = QtWidgets.QMenu(self.menu_3)
+        self.menu_5.setObjectName("menu_5")
+        self.menuloadProfile = QtWidgets.QMenu(self.menu_3)
+        self.menuloadProfile.setObjectName("menuloadProfile")
+        self.menuD = QtWidgets.QMenu(self.menubar)
+        self.menuD.setObjectName("menuD")
+        MainWindow.setMenuBar(self.menubar)
+        self.dockWidget_History = QtWidgets.QDockWidget(MainWindow)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.dockWidget_History.sizePolicy().hasHeightForWidth())
+        self.dockWidget_History.setSizePolicy(sizePolicy)
+        self.dockWidget_History.setObjectName("dockWidget_History")
+        self.dockWidgetContents_2 = QtWidgets.QWidget()
+        self.dockWidgetContents_2.setObjectName("dockWidgetContents_2")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.dockWidgetContents_2)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.listWidget = QtWidgets.QListWidget(self.dockWidgetContents_2)
+        self.listWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.listWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.listWidget.setFlow(QtWidgets.QListView.TopToBottom)
+        self.listWidget.setObjectName("listWidget")
+        self.verticalLayout.addWidget(self.listWidget)
+        self.dockWidget_History.setWidget(self.dockWidgetContents_2)
+        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.dockWidget_History)
+        self.toolBar = QtWidgets.QToolBar(MainWindow)
+        self.toolBar.setObjectName("toolBar")
+        MainWindow.addToolBar(QtCore.Qt.BottomToolBarArea, self.toolBar)
+        self.statusBar = QtWidgets.QStatusBar(MainWindow)
+        self.statusBar.setObjectName("statusBar")
+        MainWindow.setStatusBar(self.statusBar)
+        self.actionOPEN = QtWidgets.QAction(MainWindow)
+        self.actionOPEN.setObjectName("actionOPEN")
+        self.actionscanPDF = QtWidgets.QAction(MainWindow)
+        self.actionscanPDF.setObjectName("actionscanPDF")
+        self.actionsearchERR = QtWidgets.QAction(MainWindow)
+        self.actionsearchERR.setObjectName("actionsearchERR")
+        self.actionEXIT = QtWidgets.QAction(MainWindow)
+        self.actionEXIT.setObjectName("actionEXIT")
+        self.actionchooseErrFile = QtWidgets.QAction(MainWindow)
+        self.actionchooseErrFile.setObjectName("actionchooseErrFile")
+        self.action1 = QtWidgets.QAction(MainWindow)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap("d:\\VS2019Project\\PDF\\../.designer/backup/icon/RIAMB_word.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action1.setIcon(icon1)
+        self.action1.setText("")
+        font = QtGui.QFont()
+        font.setPointSize(1)
+        self.action1.setFont(font)
+        self.action1.setObjectName("action1")
+        self.action100 = QtWidgets.QAction(MainWindow)
+        self.action100.setObjectName("action100")
+        self.action120 = QtWidgets.QAction(MainWindow)
+        self.action120.setObjectName("action120")
+        self.action150 = QtWidgets.QAction(MainWindow)
+        self.action150.setObjectName("action150")
+        self.action80 = QtWidgets.QAction(MainWindow)
+        self.action80.setObjectName("action80")
+        self.actionHistoryNumber = QtWidgets.QAction(MainWindow)
+        self.actionHistoryNumber.setObjectName("actionHistoryNumber")
+        self.actionClearHistory = QtWidgets.QAction(MainWindow)
+        self.actionClearHistory.setObjectName("actionClearHistory")
+        self.actionFontSize = QtWidgets.QAction(MainWindow)
+        self.actionFontSize.setObjectName("actionFontSize")
+        self.action1_2 = QtWidgets.QAction(MainWindow)
+        self.action1_2.setCheckable(False)
+        self.action1_2.setEnabled(True)
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap("d:\\VS2019Project\\PDF\\icon/RIAMB.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action1_2.setIcon(icon2)
+        self.action1_2.setText("")
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        font.setStyleStrategy(QtGui.QFont.PreferDefault)
+        self.action1_2.setFont(font)
+        self.action1_2.setObjectName("action1_2")
+        self.actionloadProfileS120 = QtWidgets.QAction(MainWindow)
+        self.actionloadProfileS120.setObjectName("actionloadProfileS120")
+        self.actionloadProfileG120C = QtWidgets.QAction(MainWindow)
+        self.actionloadProfileG120C.setObjectName("actionloadProfileG120C")
+        self.actionopenHistory = QtWidgets.QAction(MainWindow)
+        self.actionopenHistory.setObjectName("actionopenHistory")
+        self.actionRestart = QtWidgets.QAction(MainWindow)
+        self.actionRestart.setObjectName("actionRestart")
+        self.actionTEST = QtWidgets.QAction(MainWindow)
+        self.actionTEST.setObjectName("actionTEST")
+        self.actionOpenKeyboard = QtWidgets.QAction(MainWindow)
+        self.actionOpenKeyboard.setObjectName("actionOpenKeyboard")
+        self.actionAboutQT = QtWidgets.QAction(MainWindow)
+        self.actionAboutQT.setObjectName("actionAboutQT")
+        self.actionloadProfileG120X = QtWidgets.QAction(MainWindow)
+        self.actionloadProfileG120X.setObjectName("actionloadProfileG120X")
+        self.menu.addAction(self.actionEXIT)
+        self.menu_2.addAction(self.actionopenHistory)
+        self.menu_2.addAction(self.actionRestart)
+        self.menu_2.addAction(self.actionOpenKeyboard)
+        self.menu_5.addAction(self.actionHistoryNumber)
+        self.menu_5.addAction(self.actionClearHistory)
+        self.menuloadProfile.addAction(self.actionloadProfileS120)
+        self.menuloadProfile.addAction(self.actionloadProfileG120C)
+        self.menuloadProfile.addAction(self.actionloadProfileG120X)
+        self.menu_3.addAction(self.menu_5.menuAction())
+        self.menu_3.addAction(self.menuloadProfile.menuAction())
+        self.menu_3.addAction(self.actionFontSize)
+        self.menuD.addAction(self.actionAboutQT)
+        self.menubar.addAction(self.menu.menuAction())
+        self.menubar.addAction(self.menu_2.menuAction())
+        self.menubar.addAction(self.menu_3.menuAction())
+        self.menubar.addAction(self.menuD.menuAction())
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.comboBox.setItemText(0, _translate("MainWindow", "SINAMICS S120故障手册"))
+        self.comboBox.setItemText(1, _translate("MainWindow", "SINAMICS G120C故障手册"))
+        self.comboBox.setItemText(2, _translate("MainWindow", "SINAMICS G120X故障手册"))
+        self.lineEdit.setPlaceholderText(_translate("MainWindow", "输入故障码"))
+        self.pushButton.setText(_translate("MainWindow", "故障码检索"))
+        self.groupBox.setTitle(_translate("MainWindow", "信息栏"))
+        self.groupBox_2.setTitle(_translate("MainWindow", "故障内容显示"))
+        self.menu.setTitle(_translate("MainWindow", "文件"))
+        self.menu_2.setTitle(_translate("MainWindow", "功能"))
+        self.menu_3.setTitle(_translate("MainWindow", "设置"))
+        self.menu_5.setTitle(_translate("MainWindow", "历史数据"))
+        self.menuloadProfile.setTitle(_translate("MainWindow", "加载配置文件"))
+        self.menuD.setTitle(_translate("MainWindow", "关于"))
+        self.dockWidget_History.setWindowTitle(_translate("MainWindow", "历史记录"))
+        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
+        self.actionOPEN.setText(_translate("MainWindow", "打开"))
+        self.actionscanPDF.setText(_translate("MainWindow", "PDF扫描"))
+        self.actionsearchERR.setText(_translate("MainWindow", "检索错误码"))
+        self.actionEXIT.setText(_translate("MainWindow", "退出"))
+        self.actionchooseErrFile.setText(_translate("MainWindow", "选择配置文件"))
+        self.action100.setText(_translate("MainWindow", "100%（推荐）"))
+        self.action120.setText(_translate("MainWindow", "120%"))
+        self.action150.setText(_translate("MainWindow", "150%"))
+        self.action80.setText(_translate("MainWindow", "80%"))
+        self.actionHistoryNumber.setText(_translate("MainWindow", "最大保存数量"))
+        self.actionClearHistory.setText(_translate("MainWindow", "清空历史数据"))
+        self.actionFontSize.setText(_translate("MainWindow", "字体大小设置"))
+        self.actionloadProfileS120.setText(_translate("MainWindow", "加载S120配置文件"))
+        self.actionloadProfileG120C.setText(_translate("MainWindow", "加载G120C配置文件"))
+        self.actionopenHistory.setText(_translate("MainWindow", "历史记录"))
+        self.actionRestart.setText(_translate("MainWindow", "重启软件"))
+        self.actionTEST.setText(_translate("MainWindow", "TEST"))
+        self.actionOpenKeyboard.setText(_translate("MainWindow", "打开虚拟键盘"))
+        self.actionAboutQT.setText(_translate("MainWindow", "关于QT"))
+        self.actionloadProfileG120X.setText(_translate("MainWindow", "加载G120X配置文件"))
+Ui_PDF.ui
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>902</width>
+    <height>720</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../.designer/backup/RIAMB_LOGO.png</normaloff>../.designer/backup/RIAMB_LOGO.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0" colspan="2">
+     <widget class="QWidget" name="widget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>20</height>
+       </size>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QComboBox" name="comboBox">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+         <item>
+          <property name="text">
+           <string>SINAMICS S120故障手册</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>SINAMICS G120C故障手册</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>SINAMICS G120X故障手册</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineEdit">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>500</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="maxLength">
+          <number>6</number>
+         </property>
+         <property name="placeholderText">
+          <string>输入故障码</string>
+         </property>
+         <property name="cursorMoveStyle">
+          <enum>Qt::LogicalMoveStyle</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>故障码检索</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="2">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>80</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>120</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>信息栏</string>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QTextEdit" name="textEdit">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>100</height>
+          </size>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="2">
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="title">
+       <string>故障内容显示</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="horizontalSpacing">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QScrollArea" name="scrollArea">
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <property name="lineWidth">
+          <number>2</number>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>596</width>
+            <height>463</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::LeftToRight</enum>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_icon">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>54</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>55</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>902</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="actionEXIT"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>功能</string>
+    </property>
+    <addaction name="actionopenHistory"/>
+    <addaction name="actionRestart"/>
+    <addaction name="actionOpenKeyboard"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>设置</string>
+    </property>
+    <widget class="QMenu" name="menu_5">
+     <property name="title">
+      <string>历史数据</string>
+     </property>
+     <addaction name="actionHistoryNumber"/>
+     <addaction name="actionClearHistory"/>
+    </widget>
+    <widget class="QMenu" name="menuloadProfile">
+     <property name="title">
+      <string>加载配置文件</string>
+     </property>
+     <addaction name="actionloadProfileS120"/>
+     <addaction name="actionloadProfileG120C"/>
+     <addaction name="actionloadProfileG120X"/>
+    </widget>
+    <addaction name="menu_5"/>
+    <addaction name="menuloadProfile"/>
+    <addaction name="actionFontSize"/>
+   </widget>
+   <widget class="QMenu" name="menuD">
+    <property name="title">
+     <string>关于</string>
+    </property>
+    <addaction name="actionAboutQT"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+   <addaction name="menuD"/>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_History">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="windowTitle">
+    <string>历史记录</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QListWidget" name="listWidget">
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="flow">
+        <enum>QListView::TopToBottom</enum>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>BottomToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionOPEN">
+   <property name="text">
+    <string>打开</string>
+   </property>
+  </action>
+  <action name="actionscanPDF">
+   <property name="text">
+    <string>PDF扫描</string>
+   </property>
+  </action>
+  <action name="actionsearchERR">
+   <property name="text">
+    <string>检索错误码</string>
+   </property>
+  </action>
+  <action name="actionEXIT">
+   <property name="text">
+    <string>退出</string>
+   </property>
+  </action>
+  <action name="actionchooseErrFile">
+   <property name="text">
+    <string>选择配置文件</string>
+   </property>
+  </action>
+  <action name="action1">
+   <property name="icon">
+    <iconset>
+     <normaloff>../.designer/backup/icon/RIAMB_word.png</normaloff>../.designer/backup/icon/RIAMB_word.png</iconset>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>1</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="action100">
+   <property name="text">
+    <string>100%（推荐）</string>
+   </property>
+  </action>
+  <action name="action120">
+   <property name="text">
+    <string>120%</string>
+   </property>
+  </action>
+  <action name="action150">
+   <property name="text">
+    <string>150%</string>
+   </property>
+  </action>
+  <action name="action80">
+   <property name="text">
+    <string>80%</string>
+   </property>
+  </action>
+  <action name="actionHistoryNumber">
+   <property name="text">
+    <string>最大保存数量</string>
+   </property>
+  </action>
+  <action name="actionClearHistory">
+   <property name="text">
+    <string>清空历史数据</string>
+   </property>
+  </action>
+  <action name="actionFontSize">
+   <property name="text">
+    <string>字体大小设置</string>
+   </property>
+  </action>
+  <action name="action1_2">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>icon/RIAMB.ico</normaloff>icon/RIAMB.ico</iconset>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>20</pointsize>
+     <stylestrategy>PreferDefault</stylestrategy>
+    </font>
+   </property>
+  </action>
+  <action name="actionloadProfileS120">
+   <property name="text">
+    <string>加载S120配置文件</string>
+   </property>
+  </action>
+  <action name="actionloadProfileG120C">
+   <property name="text">
+    <string>加载G120C配置文件</string>
+   </property>
+  </action>
+  <action name="actionopenHistory">
+   <property name="text">
+    <string>历史记录</string>
+   </property>
+  </action>
+  <action name="actionRestart">
+   <property name="text">
+    <string>重启软件</string>
+   </property>
+  </action>
+  <action name="actionTEST">
+   <property name="text">
+    <string>TEST</string>
+   </property>
+  </action>
+  <action name="actionOpenKeyboard">
+   <property name="text">
+    <string>打开虚拟键盘</string>
+   </property>
+  </action>
+  <action name="actionAboutQT">
+   <property name="text">
+    <string>关于QT</string>
+   </property>
+  </action>
+  <action name="actionloadProfileG120X">
+   <property name="text">
+    <string>加载G120X配置文件</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

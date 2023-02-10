@@ -1,8 +1,6 @@
 import pdfplumber
 import pandas as pd
 import os
-
-
 def g120x_scan_PDF_function(pdfPath):
     '''PDF扫描'''
     # 依次扫描PDF页面并串联文本
@@ -21,12 +19,10 @@ def g120x_scan_PDF_function(pdfPath):
     with open(txtPath, 'w', encoding='utf-8') as c:
         c.write(pageText)
         c.close()
-
     if os.path.isfile(txtPath) == False:
         return 'txt文件生成失败!'
     else:
         pdf_to_txt_result = 'txt文件生成完成! '+'保存在 ' + file_name[0]+'.txt 中。\n'
-
     # 获取每行的信息和内容
     with open(txtPath, 'r', encoding='utf-8') as f:
         allLine = f.readlines()
@@ -47,24 +43,19 @@ def g120x_scan_PDF_function(pdfPath):
         allLine = f.readlines()
         f.close()
     allLineNumber = len(allLine)
-
     # 筛选分类文本信息
     failure = {}  # 故障码和名称
     failureNumber = 0
     failureLocation = {}
-
     reaction = {}        #反应
     reactionNumber = 0
     reactionLocation = {}
-
     reason = {}
     reasonNumber = 0  # 原因数量
     reasonLocation = {}  # 原因所在首行
-
     processing = {}
     processingNumber = 0  # 处理数量
     processingLocation = {}  # 处理所在首行
-
     ########################
     ###基于面向对象思想编写###
     ########################
@@ -74,7 +65,6 @@ def g120x_scan_PDF_function(pdfPath):
             self.name = name
             self.number = number
             self.lineNumber = lineNumber
-
         def searchError(self):  # 检索故障码
             global countNumber
             countNumber = 0
@@ -86,7 +76,6 @@ def g120x_scan_PDF_function(pdfPath):
                             self.lineNumber[self.number] = x - 1
                             self.number = self.number + 1
                             countNumber = self.number
-
         def searchInformation(self):  # 检索信息值和信息类别
             global countNumber
             countNumber = 0
@@ -96,7 +85,6 @@ def g120x_scan_PDF_function(pdfPath):
                     self.lineNumber[self.number] = x
                     self.number = self.number + 1
                     countNumber = self.number
-
         def searchInformation1(self):  # 检索其他需求信息
             global countNumber
             countNumber = 0
@@ -105,24 +93,19 @@ def g120x_scan_PDF_function(pdfPath):
                     self.lineNumber[self.number] = x
                     self.number = self.number + 1
                     countNumber = self.number
-
     Failure = Foo('反应： ', failure, failureNumber, failureLocation)
     Failure.searchError()
     failureNumber = countNumber
-
     Reaction = Foo('反应： ', reaction,
                               reactionNumber, reactionLocation)
     Reaction.searchInformation()
     reactionNumber = countNumber
-
     Reason = Foo('原因： ', reason, reasonNumber, reasonLocation)
     Reason.searchInformation1()
     reasonNumber = countNumber
-
     Processing = Foo('排除方法： ', processing, processingNumber, processingLocation)
     Processing.searchInformation1()
     processingNumber = countNumber
-
     # 提取原因和处理
     if reasonNumber != processingNumber:
         print("信息提取有误！")
@@ -175,15 +158,11 @@ def g120x_scan_PDF_function(pdfPath):
             'Excel文件生成完成! '+'保存在 ' + file_name[0]+'.xlsx 中。'
     result = txt_to_excel_result
     return result
-
-
 def CreateExcel(information1, information2, information3, information4, path):
     data = {'故障名称': information1, '反应': information2,
             '原因': information3, '排除方法': information4}
     df = pd.DataFrame(data)
     df.to_excel(path)
-
-
 if __name__ == '__main__':
     a = g120x_scan_PDF_function('./PDF/G120X_failure_code_list.pdf')
     print(a)

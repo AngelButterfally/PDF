@@ -1,5 +1,4 @@
 import os
-
 def getFaltDictionaryPath():
     baseDir = os.path.dirname(__file__)
     path_1 = os.path.join(baseDir, "TXT", "S120_failure_code_list.txt")

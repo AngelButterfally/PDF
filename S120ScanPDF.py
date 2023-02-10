@@ -1,7 +1,6 @@
 import pdfplumber
 import pandas as pd
 import os
-
 def s120_scan_PDF_function(pdfPath):
     '''PDF扫描'''
     ##依次扫描PDF页面并串联文本
@@ -20,12 +19,10 @@ def s120_scan_PDF_function(pdfPath):
     with open(txtPath, 'w', encoding = 'utf-8') as c:
         c.write(pageText)
         c.close()
-
     if os.path.isfile(txtPath) == False:
         return 'txt文件生成失败!'
     else:
         pdf_to_txt_result = 'txt文件生成完成! '+'保存在 '+ file_name[0]+'.txt 中。\n'
-
     ## 获取每行的信息和内容
     with open(txtPath, 'r', encoding = 'utf-8') as f:
         allLine = f.readlines()
@@ -46,36 +43,28 @@ def s120_scan_PDF_function(pdfPath):
         allLine = f.readlines()
         f.close()
     allLineNumber = len(allLine)
-
     ## 筛选分类文本信息
     failure = {}                #故障码和名称
     failureNumber = 0
     failureLocation = {}
-
     informationValue = {}           #信息值
     informationValueNumber = 0
     informationValueLocation = {}
-
     informationCatefory = {}        #信息类别
     informationCateforyNumber = 0
     informationCateforyLocation = {}
-
     drivingObject = {}
     drivingObjectNumber = 0         #驱动对象数量
     drivingObjectLocation = {}    #驱动对象所在首行
-
     component = {}
     componentNumber = 0             #组件数量 
     componentLocation = {}        #组件所在行
-
     reason = {}
     reasonNumber = 0                #原因数量
     reasonLocation = {}           #原因所在首行
-
     processing = {}
     processingNumber = 0            #处理数量
     processingLocation = {}       #处理所在首行
-
     ########################
     ###基于面向对象思想编写###
     ########################
@@ -85,7 +74,6 @@ def s120_scan_PDF_function(pdfPath):
             self.name = name
             self.number = number
             self.lineNumber = lineNumber
-
         def searchError(self):                              #检索故障码
             global countNumber
             countNumber = 0
@@ -95,7 +83,6 @@ def s120_scan_PDF_function(pdfPath):
                     self.lineNumber[self.number] = x - 1
                     self.number = self.number + 1 
                     countNumber = self.number   
-
         def searchInformation(self):                        #检索信息值和信息类别
             global countNumber
             countNumber = 0
@@ -105,7 +92,6 @@ def s120_scan_PDF_function(pdfPath):
                     self.lineNumber[self.number] = x
                     self.number = self.number + 1
                     countNumber = self.number
-        
         def searchInformation1(self):                        #检索其他需求信息
             global countNumber
             countNumber = 0
@@ -114,40 +100,32 @@ def s120_scan_PDF_function(pdfPath):
                     self.lineNumber[self.number] = x
                     self.number = self.number + 1
                     countNumber = self.number
-
     Failure = Foo('信息值： ', failure, failureNumber, failureLocation)
     Failure.searchError()
     failureNumber = countNumber
     #print(failureNumber)
-
     InformationValue = Foo('信息值： ', informationValue, informationValueNumber, informationValueLocation)
     InformationValue.searchInformation()
     informationValueNumber = countNumber
     # print(informationValueNumber)
-
     InformationCatefory = Foo('信息类别： ', informationCatefory, informationCateforyNumber, informationCateforyLocation)
     InformationCatefory.searchInformation()
     informationCateforyNumber = countNumber
     #print(informationCateforyNumber)
-
     DrivingObject = Foo("驱动对象： ", drivingObject, drivingObjectNumber, drivingObjectLocation)
     DrivingObject.searchInformation1()
     drivingObjectNumber = countNumber
     # print(drivingObjectNumber)
-
     Component = Foo('组件： ', component, componentNumber, componentLocation)
     Component.searchInformation()
     componentNumber = countNumber
     # print(componentNumber)
-
     Reason = Foo('原因： ', reason, reasonNumber,reasonLocation)
     Reason.searchInformation1()
     reasonNumber = countNumber
-
     Processing = Foo('处理： ', processing, processingNumber, processingLocation)
     Processing.searchInformation1()
     processingNumber = countNumber
-
     ##提取驱动对象和组件
     if drivingObjectNumber != componentNumber:
         print("信息提取有误！")
@@ -167,7 +145,6 @@ def s120_scan_PDF_function(pdfPath):
                     lineNumber = drivingObjectLocation[x] + y
                     dataDrivingObject = dataDrivingObject + allLine[lineNumber]
                     drivingObject[x] = dataDrivingObject
-
     ##提取原因和处理
     if reasonNumber != processingNumber:
         print("信息提取有误！")
@@ -218,13 +195,10 @@ def s120_scan_PDF_function(pdfPath):
         txt_to_excel_result = pdf_to_txt_result + 'Excel文件生成完成! '+'保存在 '+ file_name[0]+'.xlsx 中。'
     result = txt_to_excel_result
     return result
-
 def CreateExcel(information1, information2, information3, information4, information5, information6, information7, path):
     data = {'故障名称':information1, '信息值':information2, '信息类别':information3, '驱动对象':information4, '组件':information5, '原因':information6, '处理':information7}
     df = pd.DataFrame(data)
     df.to_excel(path) 
-
-
 # if __name__ == '__main__':
 #     a = s120_scan_PDF_function('./PDF/S120_failure_code_list.pdf')
 #     print(a)

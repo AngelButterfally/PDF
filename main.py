@@ -10,7 +10,6 @@ from S120SearchKeyWords import s120_getFailureInformation, getAllFalureCodeS120
 from G120CSearchKeyWords import g120c_getFailureInformation, getAllFalureCodeG120C
 from G120XSearchKeyWords import g120x_getFailureInformation, getAllFalureCodeG120X
 from get_falt_dic_path import getFaltDictionaryPath
-
 # 确保Windows系统下任务栏图标正常
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -18,12 +17,9 @@ try:
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
-
-
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     restarted = pyqtSignal(QWidget, str)
     _Self = None  # 很重要,保留窗口引用
-
     def __init__(self, isRestart='NULL', parent=None):
         super(MainWindow, self).__init__(parent)
         MainWindow._Self = self
@@ -34,7 +30,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.iniConfigFunction()
         self.iniThread()
         self.connectFunction()
-
     def iniFile(self):
         if not os.path.exists('./TXT'):
             os.mkdir('./TXT')
@@ -45,7 +40,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if not os.path.exists('./EXCEL'):
             os.mkdir('./EXCEL')
         return
-
     def iniVariable(self):
         # txtFolderFileNum = len([name for name in os.listdir('./TXT') if os.path.isfile(os.path.join('./TXT', name))])
         self.baseDir = os.path.dirname(__file__)
@@ -69,7 +63,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.flagBit = True
         self.flagLoadTXT = [False]*self.setFaltDictionaryNum
         self.flagSysERR = False
-
     def iniUI(self, isRestart):
         # 程序自检
         if isRestart == 'restart':
@@ -84,7 +77,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.label_icon.setPixmap(
             QPixmap(os.path.join(self.baseDir, "icon", "RIAMB_word.png")))
         self.statusShowTime()
-
     def iniConfigFunction(self):
         '''软件配置'''
         self.checkConfigurationFile(faltDictionary=self.faultDictionary)
@@ -95,7 +87,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             QMessageBox.critical(self, '错误', '配置文件错误。软件无法运行!')
             self.textEdit.append('软件初始化失败！请尝试重启！')
-
     def iniThread(self):
         # 子线程
         self.thread_1 = QThread()  # S120
@@ -127,7 +118,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.thread_1.finished.connect(self.threadStop)
         self.thread_2.finished.connect(self.threadStop)
         self.thread_3.finished.connect(self.threadStop)
-
     def connectFunction(self):
         # self.pushButton.clicked.connect(self.show_txt)
         self.actionloadProfileS120.triggered.connect(
@@ -161,7 +151,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionOpenKeyboard.triggered.connect(self.onOpenKeyboard_FUNCTION)
         # 关于
         self.actionAboutQT.triggered.connect(self.aboutQT_FUNCTION)
-
     def checkConfigurationFile(self, faltDictionary):
         folder_name = os.path.join(self.baseDir, "TXT")
         if os.path.exists(folder_name):
@@ -179,11 +168,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.flagLoadTXT[i] = False
                 else:
                     self.flagLoadTXT[i] = True
-        elif self.flagLoadTXT[0] == False and self.flagLoadTXT[1] == False and self.flagLoadTXT[2] == False or not os.path.exists(folder_name):
+        if self.flagLoadTXT[0] == False and self.flagLoadTXT[1] == False and self.flagLoadTXT[2] == False:
             self.comboBox.setDisabled(True)
             self.pushButton.setDisabled(True)
             self.flagSysERR = True
-
+        if os.path.exists(folder_name) ==False:
+            self.comboBox.setDisabled(True)
+            self.pushButton.setDisabled(True)
+            self.flagSysERR = True
     def chooseDefaltDictionary(self):
         if self.flagSysERR == False:
             defaultFile_Index = [i for i, x in enumerate(
@@ -192,7 +184,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.currentDict = self.faultDictionary[defaultFile_Index[0]][1]
             self.comboBox.setCurrentIndex(defaultFile_Index[0])
         pass
-
     def choose_errInfo_repository_FUNCTION(self):
         self.allFalureCodeS120 = getAllFalureCodeG120C()
         self.allFalureCodeG120X = getAllFalureCodeG120X()
@@ -211,7 +202,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # 区分大小写的另一种方式
         # self.completer_S120.setCaseSensitivity(Qt.CaseInsensitive)
         self.lineEdit.setCompleter(self.completer_S120)
-
         if self.comboBox.currentIndex() == 0:
             self.currentDict = 'S120'
             self.textEdit.append('已加载 S120 故障信息库')
@@ -240,13 +230,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         #     self.currentDict = 'HAHA'
         #     self.textEdit.append('已加载 HAHA 故障信息库')
         #     self.defaultDictionaryPath = './TXT/G120X_failure_code_list.txt'
-
     def auto_capitalize_FUNCTION(self, txt):
         # 输入自动改为大写
         upp_text = txt.upper()
         self.lineEdit.setText(upp_text)
         return
-
     def load_profile_S120_FUNCTION(self):
         self.filePathPDF, fileTypePDF = QFileDialog.getOpenFileName(
             self, "选择S120故障手册文件", ".", "PDF Files (*.pdf)")
@@ -264,7 +252,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.textEdit.append('功能正在运行')
         return
-
     def load_profile_G120C_FUNCTION(self):
         self.filePathPDF, fileTypePDF = QFileDialog.getOpenFileName(
             self, "选择G120C故障手册文件", ".", "PDF Files (*.pdf)")
@@ -282,7 +269,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.textEdit.append('功能正在运行')
         return
-
     def load_profile_G120X_FUNCTION(self):
         self.filePathPDF, fileTypePDF = QFileDialog.getOpenFileName(
             self, "选择G120X故障手册文件", ".", "PDF Files (*.pdf)")
@@ -300,7 +286,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.textEdit.append('功能正在运行')
         return
-
     def history_maxNumber_storage_FUNCTION(self):
         num, ok = QInputDialog.getInt(
             self, '历史存储数量', '输入数字(1~20)', value=5, min=1, max=20)
@@ -313,7 +298,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.textEdit.append(
             '设置最大历史信息存储数量为：'+str(self.maximum_storage_history))
         return
-
     def font_size_FUNCTION(self):
         num, ok = QInputDialog.getInt(
             self, '字体大小设置', '输入数字(12~34)', value=self.label_pix, min=8, max=30, step=2)
@@ -323,12 +307,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.update()
         self.textEdit.append('设置显示字体大小为：'+str(self.label_pix) + 'px')
         return
-
     def history_clear_FUNCTION(self):
         self.errCodeList = []
         self.listWidget.clear()
         return
-
     def search_key_words_FUNCTION(self):
         code = self.lineEdit.text()
         if len(code) == 6:
@@ -340,10 +322,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.currentDictionaryPath, errCode, self.currentDict)
         self.label.setText(message)
         return
-
     def show_history_dockwidget_FUNCTION(self):
         self.dockWidget_History.show()
-
     def search_key_words(self, errDictionaryPath, errCode, switchDict):
         if switchDict == 'S120':
             message, flagBit = s120_getFailureInformation(
@@ -355,7 +335,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             message, flagBit = g120x_getFailureInformation(
                 errDictionaryPath, errCode)
         return message, flagBit
-
     def wheelEvent(self, event):
         angle = event.angleDelta() / 8  # 返回QPoint对象，为滚轮转过的数值，单位为1/8度
         angleY = angle.y()
@@ -373,17 +352,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.label.setStyleSheet(label_pix)
             # self.adjustSize()
             self.update()
-
     def keyReleaseEvent(self, QKeyEvent):
         if QKeyEvent.key() == Qt.Key_Control:
             self.ctrlPressed = False
         return super().keyReleaseEvent(QKeyEvent)
-
     def keyPressEvent(self, QKeyEvent):
         if QKeyEvent.key() == Qt.Key_Control:
             self.ctrlPressed = True
         return super().keyPressEvent(QKeyEvent)
-
     def history_storage(self):
         if self.flagBit == True:
             errCode = self.lineEdit.text()
@@ -406,7 +382,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.listWidget.addItems(self.errCodeList)
         elif self.flagBit == False:
             return
-
     def history_show(self):
         a_item = self.listWidget.selectedItems()[0]  # 获取选择的item
         index = self.listWidget.indexFromItem(a_item)  # 通过item获取选择的索引号
@@ -422,9 +397,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         message = self.search_key_words(errDictionary, errCode, switchDict)
         self.label.setText(message[0])
         return
-
     def listWidget_right_menu_FUNCTION(self, pos):
-
         menu = QtWidgets.QMenu()
         opt1 = menu.addAction("删除条目")
         opt2 = menu.addAction("清空历史记录")
@@ -442,7 +415,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.listWidget.clear()
                 self.listWidget.addItems(self.errCodeList)
                 return
-
     def statusShowTime(self):
         '''显示当前时间'''
         self.timer = QTimer()
@@ -454,7 +426,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.info = QLabel()
         self.info.setText('-Code by RIAMB-')
         self.statusBar.addPermanentWidget(self.info, 0)
-
     def showCurrentTime(self, timeLabel):
         '''获取当前时间'''
         # import time
@@ -462,7 +433,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         currentTime = QDateTime.currentDateTime()
         self.timeDisplay = currentTime.toString('yyyy-MM-dd hh:mm:ss dddd')
         timeLabel.setText(self.timeDisplay)
-
     def restart_FUNCTION(self):
         if QMessageBox.question(self, "提示", "确认要重启软件吗?") == QMessageBox.Yes:
             self.hide()
@@ -471,7 +441,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.timeLabel = QLabel()
             self.info = QLabel()
         return
-
     @classmethod  # 使用classmethod重载功能
     def onRestart(cls, widget, restart):
         w = MainWindow(restart)
@@ -479,7 +448,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         widget.close()
         widget.deleteLater()
         del widget
-
     def onOpenKeyboard_FUNCTION(self):
         import glob
         kernelType = QSysInfo.kernelType()
@@ -504,10 +472,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         elif kernelType == 'linux':
             self.textEdit.append('该系统无法使用此功能')
             pass
-
     def acceptThreadMessage(self, receiveMessageFromChild):
         self.resultFromChildThreadPDF = receiveMessageFromChild
-
     def onThreadFinish(self, flagFinish):
         if flagFinish == 'finish_T1' and self.thread_1.isRunning():
             self.thread_1.requestInterruption()
@@ -521,7 +487,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.thread_3.requestInterruption()
             self.thread_3.quit()
             self.thread_3.wait()
-
     def threadStop(self):
         '''退出线程'''
         if self.thread_1.isRunning() == False and self.actionloadProfileS120.isEnabled() == False:
@@ -531,15 +496,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         elif self.thread_3.isRunning() == False and self.actionloadProfileG120X.isEnabled() == False:
             self.actionloadProfileG120X.setEnabled(True)
         self.textEdit.append(self.resultFromChildThreadPDF)
-
     def aboutQT_FUNCTION(self):
         QMessageBox.aboutQt(self, 'QT')
-
     def TEST(self):
         self.textEdit.append('test message ~')
         return
-
-
 if __name__ == '__main__':
     QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)
